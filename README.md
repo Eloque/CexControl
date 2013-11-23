@@ -1,8 +1,8 @@
 CexControl
 ==========
 Python utility to connect to Cex.IO
-
 Be warned, this is a rough Beta version. Use at your own risk.
+
 ==========
 Instructions & Installation
 
