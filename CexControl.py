@@ -15,20 +15,58 @@ import cexapi
 import re
 import time
 import json
+import sys
 
-version = "0.3.3"
+version = "0.3.4"
 
 NMCThreshold = 0.00010000
 BTCThreshold = 0.00010000
 
 def LoadSettings():
 
-    print "Loading Settings"
-    settings = json.load(open("CexControlSettings.conf"))
+    print "Attempting to load Settings"
+    
+    try:
+        
+        fp = open("CexControlSettings.conf")       
+        settings = json.load(fp)
 
+        if ( settings ):
+            print "File found, loading"
+        
+    except IOError:
+        print "Could not open file, attempting to create new one"
+        CreateSettings()
+        settings = LoadSettings()
+        
     return settings
 
+def CreateSettings():
+
+    print ""
+    print "Please enter your credentials"
+    print ""
+    username = raw_input("Username: ")
+    key      = raw_input("API Key: ")
+    secret   = raw_input("API Secret: ")
+    
+    settings = { "username":str(username), "key":str(key), "secret":str(secret) }
+    
+    try:
+        json.dump(settings, open("CexControlSettings.conf", 'w'))
+        print ""
+        print "Configuration file created, attempting reload"
+        print ""
+    except:
+        print sys.exc_info()
+        print "Failed to write configuration file, giving up"
+        exit()
+    
 def main():
+
+    print ("======= CexControl version %s =======") % version
+    
+    ParseArguments()
     
     try:
         settings = LoadSettings()
@@ -43,8 +81,8 @@ def main():
     try:
         context = cexapi.api(username, api_key, api_secret)
         balance = context.balance()
-
-        print ("======= CexControl version %s =======") % version
+        
+        print ("========================================")
 
         print "Account       : %s" % username
         print "GHS balance   : %s" % balance['GHS']['available']
@@ -228,6 +266,22 @@ def CheckCoin( CoinName, TickerName, Context):
         print ("----------------------------------------")
 
 
+def ParseArguments():
+    arguments = sys.argv
+   
+    if (arguments.__len__ > 1):
+        print "CexControl started with arguments"
+        print ""
+
+        ## Remove the filename itself
+        del arguments[0]
+
+        for argument in arguments:
+
+            if argument == "newconfig":
+                print "newconfig:"
+                print "  Delete settings and create new"
+                CreateSettings()
 
 if __name__ == '__main__':
     main()
