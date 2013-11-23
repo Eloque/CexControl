@@ -31,7 +31,7 @@ class api:
   ## Make sure the next nonce is different from the previous within a fixed API call 
   while ( self.__previous_nonce == self.__nonce_v):
       self.__nonce_v = str(time.time()).split('.')[0]
-      time.sleep(0.2)
+      time.sleep(0.5)
 
  
  ##generate segnature
