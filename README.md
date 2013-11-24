@@ -5,7 +5,7 @@ CexControl is a simple utility script to manage mining reinvestments on Cex.IO, 
 This is Beta software. Use at your own risk.
 
 ### Installation
-Put all the files in on user writeable directory. 
+Put all the files in a user writeable directory. 
 
 ### User guide
 #### To start
