@@ -12,27 +12,31 @@ import urllib2
 import json
 
 class api:
+ previous_nonce = 0;      
  __username	= '';
  __api_key	= '';
  __api_secret	= '';
  __nonce_v	= '';
- __previous_nonce = '';
+ 
 
  ##Init class##
  def __init__(self,username,api_key,api_secret):
   self.__username = username
   self.__api_key = api_key
   self.__api_secret = api_secret
-
+  
  ##get timestamp as nonce
  def __nonce(self):
-  self.__previous_nonce = self.__nonce_v
+          
+  noncevalue = int(time.time())
   
   ## Make sure the next nonce is different from the previous within a fixed API call 
-  while ( self.__previous_nonce == self.__nonce_v):
-      self.__nonce_v = str(time.time()).split('.')[0]
-      time.sleep(0.5)
-
+  while ( self.previous_nonce >= noncevalue):
+      noncevalue = noncevalue + 1
+       
+  self.__nonce_v = str(noncevalue).split('.')[0]
+  self.previous_nonce = noncevalue
+  print noncevalue
  
  ##generate segnature
  def __signature(self):
