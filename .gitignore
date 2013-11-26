@@ -1,3 +1,4 @@
 CexControlSettings.conf
 CexControlSettings.conf.bu
-cexapi.pyc
+*.pyc
+__init__.py

@@ -226,7 +226,8 @@ def CheckCoin( CoinName, TickerName, Context):
         Ask = ConvertUnicodeFloatToFloat(ticker["ask"])
         Bid = ConvertUnicodeFloatToFloat(ticker["bid"])
         Price = (Ask+Bid) / 2
-        Price = round(Price,8)
+        ## Change price to 7 decimals
+        Price = round(Price,7)
 
         AmountToBuy = Saldo / Price
         AmountToBuy = round(AmountToBuy,8)
