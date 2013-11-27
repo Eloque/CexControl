@@ -17,7 +17,9 @@ import time
 import json
 import sys
 
-version = "0.3.4"
+INTEGERMATH = 100000000
+
+version = "0.4.5"
 
 NMCThreshold = 0.00010000
 BTCThreshold = 0.00010000
@@ -106,7 +108,6 @@ def main():
         print ("== !! ============================ !! ==")
         exit()
 
-
     while True:
         now = time.asctime( time.localtime(time.time()) )
         
@@ -120,8 +121,11 @@ def main():
 
             CancelOrder(context)
 
+            ## ReinvestCoin
+            ReinvestCoin(context, "NMC")
+
             CheckCoin("BTC", "GHS/BTC", context)
-            CheckCoin("NMC", "GHS/NMC", context)
+            ##CheckCoin("NMC", "GHS/NMC", context)
                 
         except:
             print "== !! ============================ !! =="
@@ -138,7 +142,7 @@ def main():
             print "== !! ============================ !! =="
             
             
-        cycle = 300
+        cycle = 150
 
         while cycle > 0:
             cycle = cycle - 1
@@ -179,14 +183,19 @@ def CancelOrder(context):
     order = context.current_orders("GHS/BTC")
     for item in order:
         context.cancel_order(item['id'])
-        print "BTC Order %s canceled" % item['id']
-
+        print "GHS/BTC Order %s canceled" % item['id']
 
     ## NMC Order cancel
     order = context.current_orders("GHS/NMC")
     for item in order:
         context.cancel_order(item['id'])
-        print "NMC Order %s canceled" % item['id']
+        print "GHS/NMC Order %s canceled" % item['id']
+        
+    ## NMC Order cancel
+    order = context.current_orders("NMC/BTC")
+    for item in order:
+        context.cancel_order(item['id'])
+        print "BTC/NMC Order %s canceled" % item['id']        
 
 def CheckCoin( CoinName, TickerName, Context):
     ## Get Balance of BTC
@@ -267,6 +276,43 @@ def CheckCoin( CoinName, TickerName, Context):
         print ("----------------------------------------")
 
 
+## Get the balance of certain type of Coin
+def GetBalance(Context, CoinName):
+    
+    try:
+        
+        balance = Context.balance()
+    
+        Coin =  balance[CoinName]
+        Saldo = ConvertUnicodeFloatToFloat(Coin["available"])
+        
+    except:
+        print balance
+        Saldo = 0
+        
+    return Saldo
+
+## Return the Contex for connection
+def GetContext():
+    
+    try:
+        settings = LoadSettings()
+    except:
+        print "Could not load settings, exiting"
+        exit()
+        
+    username    = str(settings['username'])
+    api_key     = str(settings['key'])
+    api_secret  = str(settings['secret'])
+
+    try:
+        context = cexapi.api(username, api_key, api_secret)
+        
+    except:
+        print context
+        
+    return context
+
 def ParseArguments():
     arguments = sys.argv
    
@@ -284,6 +330,159 @@ def ParseArguments():
                 print "  Delete settings and create new"
                 CreateSettings()
 
+## Reinvest a coin
+def ReinvestCoin(Context, CoinName ):
+    
+    Saldo = GetBalance(Context, CoinName)
+    
+    print "%s" % CoinName,
+    print "balance: %.8f" % Saldo
+    
+    if ( Saldo > NMCThreshold ):
+    
+        ## Check if the Coin is to be traded to BTC first
+        TargetCoin = DoNMC(Context)
+        print "TargetCoin :", TargetCoin
+    
+        TradeCoin( Context, CoinName, TargetCoin )
+    
+
+## Trade one coin for another
+def TradeCoin( Context, CoinName, TargetCoin ):
+    
+    ## Get the Price of the TargetCoin
+    Price = GetPriceByCoin( Context, CoinName, TargetCoin )
+          
+    ## Get the balance of the coin
+    Saldo = GetBalance( Context, CoinName)
+    print "Balance %.8f" % Saldo
+    
+    ## Caculate what to buy
+    AmountToBuy = Saldo / Price
+    AmountToBuy = round(AmountToBuy-0.0000005,7)
+    
+    print "Amount to buy %.08f" % AmountToBuy
+    
+    ## This is an HACK
+    Total = AmountToBuy * Price
+    
+    while ( Total > Saldo ):
+        AmountToBuy = AmountToBuy - 0.0000005
+        AmountToBuy = round(AmountToBuy-0.0000005,7)
+
+        print ""
+        print "To buy adjusted to : %.8f" % AmountToBuy
+        Total = AmountToBuy * Price    
+
+    print "Amount to buy %.08f" % AmountToBuy
+    
+    TickerName = GetTickerName( CoinName, TargetCoin )
+    
+    ## Hack, to differentiate between buy and sell
+    action = ''
+    if TargetCoin == "BTC":
+        action = 'sell'
+        AmountToBuy = Saldo ## sell the complete balance!
+        print "To buy adjusted to : %.8f" % AmountToBuy
+    else:
+        action = 'buy'
+    
+    result = Context.place_order(action, AmountToBuy, Price, TickerName )
+     
+    try:
+        OrderID = result['id']
+        print " Order ID", OrderID
+    except:
+        print result
+
+    
+## Simply reformat a float to 8 numbers behind the comma
+def FormatFloat( number):
+    
+    number = unicode("%.8f" % number)
+    return number
+    
+    
+## We do nothing but check how many coins we could get for NMC/BTC/GHS vs NMC/GHS
+def DoNMC(Context):   
+    ## Get the Price NMC/BTC
+    
+    GHS_NMCPrice = GetPrice(Context, "GHS/NMC")
+    NMC_BTCPrice = GetPrice(Context, "NMC/BTC")
+    GHS_BTCPrice = GetPrice(Context, "GHS/BTC")    
+    
+    GHS_NMCPrice = 1/GHS_NMCPrice
+    GHS_BTCPrice = 1/GHS_BTCPrice
+    
+    print "1 NMC is %s GHS" % FormatFloat(GHS_NMCPrice)
+    ##print "1 NMC is %s BTC" % FormatFloat(NMC_BTCPrice)
+    ##print "1 BTC is %s GHS" % FormatFloat(GHS_BTCPrice)
+    
+    NMCviaBTC = NMC_BTCPrice * GHS_BTCPrice
+    
+    print "1 NMC via BTC is %s GHS" % FormatFloat(NMCviaBTC)
+    
+    Percentage = NMCviaBTC/GHS_NMCPrice * 100
+    
+    print "Buying via BTC yields %2.2f percent" % Percentage
+    
+    if NMCviaBTC > GHS_NMCPrice:
+        returnvalue = "BTC"
+    else:
+        returnvalue = "GHS"
+    
+    return returnvalue
+    
+    
+def GetPriceByCoin(Context, CoinName, TargetCoin ):
+    
+    Ticker = GetTickerName( CoinName, TargetCoin )
+        
+    return GetPrice(Context, Ticker)
+
+
+## Fallback function to get TickerName    
+def GetTickerName( CoinName, TargetCoin ):
+   
+    Ticker = ""
+   
+    if CoinName == "NMC" :
+        if TargetCoin == "GHS" :
+            Ticker = "GHS/NMC"
+        if TargetCoin == "BTC" :
+            Ticker = "NMC/BTC"
+
+    return Ticker
+    
+def GetPrice(Context, Ticker):
+    
+    ## Get price
+    ticker = Context.ticker(Ticker)
+
+    Ask = ConvertUnicodeFloatToFloat(ticker["ask"])
+    Bid = ConvertUnicodeFloatToFloat(ticker["bid"])
+    
+    ## Get average
+    Price = (Ask+Bid) / 2
+    
+    ## Change price to 7 decimals
+    Price = round(Price,8)
+    
+    ##print Price
+    ##Price = int(Price * INTEGERMATH)
+    
+    return Price
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 if __name__ == '__main__':
     main()
-
