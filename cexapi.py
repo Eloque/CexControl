@@ -36,7 +36,7 @@ class api:
        
   self.__nonce_v = str(noncevalue).split('.')[0]
   self.previous_nonce = noncevalue
-  print noncevalue
+  ## print noncevalue
  
  ##generate segnature
  def __signature(self):
