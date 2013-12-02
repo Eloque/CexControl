@@ -374,14 +374,14 @@ def GetTargetCoin(Context):
 
     return returnvalue
 
+## Get the price of a coin for a market value
 def GetPriceByCoin(Context, CoinName, TargetCoin ):
 
     Ticker = GetTickerName( CoinName, TargetCoin )
 
     return GetPrice(Context, Ticker)
 
-
-## Fallback function to get TickerName
+## Fall back function to get TickerName
 def GetTickerName( CoinName, TargetCoin ):
 
     Ticker = ""
