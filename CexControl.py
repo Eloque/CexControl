@@ -17,7 +17,7 @@ import time
 import json
 import sys
 
-version = "0.4.13"
+version = "0.5.1"
 
 NMCThreshold = 0.00010000
 BTCThreshold = 0.00000100
