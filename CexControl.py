@@ -400,6 +400,7 @@ def GetTickerName( CoinName, TargetCoin ):
 
     return Ticker
 
+## Get Price by ticker
 def GetPrice(Context, Ticker):
 
     ## Get price
