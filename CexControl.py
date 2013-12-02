@@ -17,9 +17,7 @@ import time
 import json
 import sys
 
-INTEGERMATH = 100000000
-
-version = "0.4.12"
+version = "0.4.13"
 
 NMCThreshold = 0.00010000
 BTCThreshold = 0.00000100
