@@ -11,20 +11,22 @@
 # Donate BTC: 17w7oe38d8Rm3pHYLwNZLn8TFSBVEaogJA
 #-------------------------------------------------------------------------------
 
+from __future__ import print_function
+
 import cexapi
 import re
 import time
 import json
 import sys
 
-version = "0.5.1"
+version = "0.5.2"
 
 NMCThreshold = 0.00010000
 BTCThreshold = 0.00000100
 
 def LoadSettings():
 
-    print "Attempting to load Settings"
+    print ("Attempting to load Settings")
 
     try:
 
@@ -32,10 +34,10 @@ def LoadSettings():
         settings = json.load(fp)
 
         if ( settings ):
-            print "File found, loading"
+            print ("File found, loading")
 
     except IOError:
-        print "Could not open file, attempting to create new one"
+        print ("Could not open file, attempting to create new one")
         CreateSettings()
         settings = LoadSettings()
 
@@ -43,9 +45,9 @@ def LoadSettings():
 
 def CreateSettings():
 
-    print ""
-    print "Please enter your credentials"
-    print ""
+    print ("")
+    print ("Please enter your credentials")
+    print ("")
     username = raw_input("Username: ")
     key      = raw_input("API Key: ")
     secret   = raw_input("API Secret: ")
@@ -54,24 +56,24 @@ def CreateSettings():
 
     try:
         json.dump(settings, open("CexControlSettings.conf", 'w'))
-        print ""
-        print "Configuration file created, attempting reload"
-        print ""
+        print ("")
+        print ("Configuration file created, attempting reload")
+        print ("")
     except:
-        print sys.exc_info()
-        print "Failed to write configuration file, giving up"
+        print (sys.exc_info())
+        print ("Failed to write configuration file, giving up")
         exit()
 
 def main():
 
-    print ("======= CexControl version %s =======") % version
+    print ("======= CexControl version %s =======" % version)
 
     ParseArguments()
 
     try:
         settings = LoadSettings()
     except:
-        print "Could not load settings, exiting"
+        print ("Could not load settings, exiting")
         exit()
 
     username    = str(settings['username'])
@@ -84,45 +86,45 @@ def main():
 
         print ("========================================")
 
-        print "Account       : %s" % username
-        print "GHS balance   : %s" % balance['GHS']['available']
+        print ("Account       : %s" % username)
+        print ("GHS balance   : %s" % balance['GHS']['available'])
 
         print ("========================================")
 
     except:
         print ("== !! ============================ !! ==")
-        print "Error:",
+        print ("Error:")
 
         try:
             ErrorMessage = balance['error']
         except:
-            ErrorMessage = "Unkown"
+            ErrorMessage = ("Unkown")
 
-        print ErrorMessage
+        print(ErrorMessage)
 
-        print ""
+        print ("")
 
-        print "Could not connect Cex.IO, exiting"
+        print ("Could not connect Cex.IO, exiting")
         print ("== !! ============================ !! ==")
         exit()
 
     while True:
         now = time.asctime( time.localtime(time.time()) )
 
-        print ""
-        print "%s" % now
+        print ("")
+        print ("%s" % now)
 
         CancelOrder(context)
 
         ##balance = context.balance()
         GHSBalance = GetBalance(context, 'GHS')
-        print "GHS balance: %s" % GHSBalance ##  balance['GHS']['available']
-        print ""
+        print ("GHS balance: %s" % GHSBalance)
+        print ("")
 
         TargetCoin = GetTargetCoin(context)
 
-        print "Target Coin set to: %s" % TargetCoin
-        print ""
+        print ("Target Coin set to: %s" % TargetCoin)
+        print ("")
 
         if (TargetCoin == "BTC"):
             ReinvestCoin(context, "NMC", NMCThreshold, TargetCoin )
@@ -174,32 +176,32 @@ def CancelOrder(context):
     for item in order:
         try:
             context.cancel_order(item['id'])
-            print "GHS/BTC Order %s canceled" % item['id']
+            print ("GHS/BTC Order %s canceled" % item['id'])
         except:
-            print "Cancel order failed"
+            print ("Cancel order failed")
 
     ## NMC Order cancel
     order = context.current_orders("GHS/NMC")
     for item in order:
         try:
             context.cancel_order(item['id'])
-            print "GHS/NMC Order %s canceled" % item['id']
+            print ("GHS/NMC Order %s canceled" % item['id'])
         except:
-            print "Cancel order failed"
+            print ("Cancel order failed")
 
     ## NMC Order cancel
     order = context.current_orders("NMC/BTC")
     for item in order:
         try:
             context.cancel_order(item['id'])
-            print "BTC/NMC Order %s canceled" % item['id']
+            print ("BTC/NMC Order %s canceled" % item['id'])
         except:
-            print "Cancel order failed"
+            print ("Cancel order failed")
 
 ## Get the balance of certain type of Coin
 def GetBalance(Context, CoinName):
 
-    balance = "NULL"
+    balance = ("NULL")
 
     try:
 
@@ -209,7 +211,7 @@ def GetBalance(Context, CoinName):
         Saldo = ConvertUnicodeFloatToFloat(Coin["available"])
 
     except:
-        print balance
+        print (balance)
         Saldo = 0
 
     return Saldo
@@ -220,7 +222,7 @@ def GetContext():
     try:
         settings = LoadSettings()
     except:
-        print "Could not load settings, exiting"
+        print ("Could not load settings, exiting")
         exit()
 
     username    = str(settings['username'])
@@ -231,16 +233,16 @@ def GetContext():
         context = cexapi.api(username, api_key, api_secret)
 
     except:
-        print context
+        print (context)
 
     return context
 
 def ParseArguments():
     arguments = sys.argv
 
-    if (arguments.__len__ > 1):
-        print "CexControl started with arguments"
-        print ""
+    if (len(arguments) > 1):
+        print ("CexControl started with arguments")
+        print ("")
 
         ## Remove the filename itself
         del arguments[0]
@@ -248,8 +250,8 @@ def ParseArguments():
         for argument in arguments:
 
             if argument == "newconfig":
-                print "newconfig:"
-                print "  Delete settings and create new"
+                print ("newconfig:")
+                print ("  Delete settings and create new")
                 CreateSettings()
 
 ## Reinvest a coin
@@ -258,8 +260,8 @@ def ReinvestCoin(Context, CoinName, Threshold, TargetCoin ):
 
     Saldo = GetBalance(Context, CoinName)
 
-    print "%s" % CoinName,
-    print "balance: %.8f" % Saldo
+    print ("%s" % CoinName, end = " ")
+    print ("Balance: %.8f" % Saldo)
 
     if ( Saldo > Threshold ):
 
@@ -276,14 +278,14 @@ def TradeCoin( Context, CoinName, TargetCoin ):
 
     ## Get the balance of the coin
     Saldo = GetBalance( Context, CoinName)
-    print CoinName,
-    print "Balance %.8f" % Saldo
+    print (CoinName , end = " " )
+    print ("Balance %.8f" % Saldo)
 
     ## Caculate what to buy
     AmountToBuy = Saldo / Price
     AmountToBuy = round(AmountToBuy-0.0000005,7)
 
-    print "Amount to buy %.08f" % AmountToBuy
+    print ("Amount to buy %.08f" % AmountToBuy)
 
     ## This is an HACK
     Total = AmountToBuy * Price
@@ -292,8 +294,8 @@ def TradeCoin( Context, CoinName, TargetCoin ):
         AmountToBuy = AmountToBuy - 0.0000005
         AmountToBuy = round(AmountToBuy-0.0000005,7)
 
-        print ""
-        print "To buy adjusted to : %.8f" % AmountToBuy
+        print ("")
+        print ("To buy adjusted to : %.8f" % AmountToBuy)
         Total = AmountToBuy * Price
 
     TickerName = GetTickerName( CoinName, TargetCoin )
@@ -303,24 +305,24 @@ def TradeCoin( Context, CoinName, TargetCoin ):
     if TargetCoin == "BTC":
         action = 'sell'
         AmountToBuy = Saldo ## sell the complete balance!
-        print "To sell adjusted to : %.8f NMC" % AmountToBuy
+        print ("To sell adjusted to : %.8f NMC" % AmountToBuy)
     else:
         action = 'buy'
 
     result = Context.place_order(action, AmountToBuy, Price, TickerName )
 
-    print ""
-    print "Placed order at %s" % TickerName
-    print "     Buy %.8f" % AmountToBuy,
-    print "at %.10f" % Price
-    print "   Total %.8f" % Total
-    print "   Funds %.8f" % Saldo
+    print ("")
+    print ("Placed order at %s" % TickerName)
+    print ("     Buy %.8f" % AmountToBuy)
+    print ("at %.10f" % Price)
+    print ("   Total %.8f" % Total)
+    print ("   Funds %.8f" % Saldo)
 
     try:
         OrderID = result['id']
-        print "Order ID %s" % OrderID
+        print ("Order ID %s" % OrderID)
     except:
-        print result
+        print (result)
 
     print ("----------------------------------------")
 
@@ -343,10 +345,10 @@ def GetTargetCoin(Context):
     GHS_NMCPrice = 1/GHS_NMCPrice
     GHS_BTCPrice = 1/GHS_BTCPrice
 
-    print "1 NMC is %s GHS" % FormatFloat(GHS_NMCPrice),
-    print "1 NMC is %s BTC" % FormatFloat(NMC_BTCPrice)
-    print "1 BTC is %s GHS" % FormatFloat(GHS_BTCPrice),
-    print "1 BTC is %s NMC" % FormatFloat(BTC_NMCPrice)
+    print ("1 NMC is %s GHS" % FormatFloat(GHS_NMCPrice))
+    print ("1 NMC is %s BTC" % FormatFloat(NMC_BTCPrice))
+    print ("1 BTC is %s GHS" % FormatFloat(GHS_BTCPrice))
+    print ("1 BTC is %s NMC" % FormatFloat(BTC_NMCPrice))
 
     NMCviaBTC = NMC_BTCPrice * GHS_BTCPrice
     BTCviaNMC = BTC_NMCPrice * GHS_NMCPrice
@@ -354,21 +356,21 @@ def GetTargetCoin(Context):
     BTCviaNMCPercentage = BTCviaNMC / GHS_BTCPrice * 100
     NMCviaBTCPercentage = NMCviaBTC / GHS_NMCPrice * 100
 
-    print ""
-    print "1 BTC via NMC is %s GHS" % FormatFloat(BTCviaNMC),
-    print "Efficiency : %2.2f" % BTCviaNMCPercentage
-    print "1 NMC via BTC is %s GHS" % FormatFloat(NMCviaBTC),
-    print "Efficiency : %2.2f" % NMCviaBTCPercentage
+    print ("")
+    print ("1 BTC via NMC is %s GHS" % FormatFloat(BTCviaNMC), end = " " )
+    print ("Efficiency : %2.2f" % BTCviaNMCPercentage)
+    print ("1 NMC via BTC is %s GHS" % FormatFloat(NMCviaBTC), end = " " )
+    print ("Efficiency : %2.2f" % NMCviaBTCPercentage)
 
 
     if NMCviaBTCPercentage > BTCviaNMCPercentage:
-        returnvalue = "BTC"
+        returnvalue = ("BTC")
     else:
-        returnvalue = "NMC"
+        returnvalue = ("NMC")
 
-    print ""
-    print "Buy", returnvalue,
-    print "then use that to buy GHS"
+    print ("")
+    print ("Buy %s" % returnvalue, end = " " )
+    print ("then use that to buy GHS")
 
     return returnvalue
 
