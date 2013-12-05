@@ -3,14 +3,6 @@
 CexControl is a simple utility script to manage mining reinvestments on Cex.IO, simply put, it takes the full profit from BTC and NMC minig and automatically uses that to buy more GHS. It has some nice features that calculate prices and try to optimize orders.
 This is Beta software. Use at your own risk.
 
-### Support & Donations
-I code this for my own benefit as much as the communities. I firmly believe there should be more alternatives for every problem that software can tackle, so people have choice. Also I don't believe an idea, an algorithm or such can be owned. As such, this simple thing is opensource. If you do feel like tipping me, that can be done in two different ways.
-
-First of all, BitCoins, I have a donation address that you can use: 1Lehv8uMSMyYyY7ZFTN1NiRj8X24E56rvV
-Via a QRCode that is: ![alt tag](https://raw.github.com/Eloque/CexControl/master/donate.png) 
-Or you can start using Cex.IO via my referral code: https://cex.io/r/1/Eloque/0/
-Or via Vouchers on Cex.IO
-
 ### Installation
 Put all the files in a user writeable directory. 
 
@@ -26,6 +18,16 @@ To create a new configuration, start with "python ./CexControl.py newconfig", th
 The script will run and check every 5 minutes if there are more then 0.0001 BTC or NMC available. 
 
 If that is the case, the script will retrieve both Bid and Ask prices and average those in a on order spending as close to maximum as possible. If those orders are not fulfilled within 5 minutes, they will be canceled and new orders put in.
+
+### Support & Donations
+I code this for my own benefit as much as the communities. I firmly believe there should be more alternatives for every problem that software can tackle, so people have choice. Also I don't believe an idea, an algorithm or such can be owned. As such, this simple thing is opensource. If you do feel like tipping me, that can be done in a few different ways.
+
+First of all, BitCoins: 
+![alt tag](https://raw.github.com/Eloque/CexControl/master/donate.png) 
+
+1Lehv8uMSMyYyY7ZFTN1NiRj8X24E56rvV
+
+You could also start using Cex.IO via my referral code: https://cex.io/r/1/Eloque/0/. And vouchers via Cex.IO can of coure also be added.
 
 ### Version history
 #### Version 0.5.4
