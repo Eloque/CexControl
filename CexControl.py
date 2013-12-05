@@ -8,7 +8,7 @@
 # Copyright:  (c) Eloque 2013
 # Licence:    Free to use, copy and distribute as long as I'm credited
 #             Provided as is, use at your own risk and for your own benefit
-# Donate BTC: 17w7oe38d8Rm3pHYLwNZLn8TFSBVEaogJA
+# Donate BTC: 1Lehv8uMSMyYyY7ZFTN1NiRj8X24E56rvV
 #-------------------------------------------------------------------------------
 
 from __future__ import print_function
