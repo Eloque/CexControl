@@ -24,7 +24,7 @@ I code this for my own benefit as much as the communities. I firmly believe ther
 
 First of all, BitCoins: 1Lehv8uMSMyYyY7ZFTN1NiRj8X24E56rvV
 You could also start using Cex.IO via my referral code: https://cex.io/r/1/Eloque/0/.
-Vouchers via Cex.IO can of coure also be used.
+Vouchers via Cex.IO can of course also be used.
 
 <img style="float:right" src="https://raw.github.com/Eloque/CexControl/master/donate.png" />
 
