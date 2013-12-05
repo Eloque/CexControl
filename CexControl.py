@@ -325,7 +325,7 @@ def TradeCoin( Context, CoinName, TargetCoin ):
 
     print ("")
     print ("Placed order at %s" % TickerName)
-    print ("     Buy %.8f" % AmountToBuy)
+    print ("     Buy %.8f" % AmountToBuy, end = " ")
     print ("at %.10f" % Price)
     print ("   Total %.8f" % Total)
     print ("   Funds %.8f" % Saldo)
