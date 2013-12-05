@@ -21,6 +21,13 @@ The script will run and check every 5 minutes if there are more then 0.0001 BTC 
 If that is the case, the script will retrieve both Bid and Ask prices and average those in a on order spending as close to maximum as possible. If those orders are not fulfilled within 5 minutes, they will be canceled and new orders put in.
 
 ### Version history
+#### Version 0.5.4
+- Cleaned up unused code
+- Improved error handling
+- Handle HTTP disconnects
+- Changed Print function to account for Python3 
+- General code improvements
+
 #### Version 0.4.12
 - Improved trade functions, now calculate efficiency correctly
 - Improved error handling

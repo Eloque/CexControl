@@ -19,7 +19,10 @@ import time
 import json
 import sys
 
-version = "0.5.2"
+## just place till P3
+import urllib2
+
+version = "0.5.4"
 
 NMCThreshold = 0.00010000
 BTCThreshold = 0.00000100
@@ -109,30 +112,39 @@ def main():
         exit()
 
     while True:
-        now = time.asctime( time.localtime(time.time()) )
+        try:
+            now = time.asctime( time.localtime(time.time()) )
 
-        print ("")
-        print ("%s" % now)
+            print ("")
+            print ("%s" % now)
 
-        CancelOrder(context)
+            CancelOrder(context)
 
-        ##balance = context.balance()
-        GHSBalance = GetBalance(context, 'GHS')
-        print ("GHS balance: %s" % GHSBalance)
-        print ("")
+            ##balance = context.balance()
+            GHSBalance = GetBalance(context, 'GHS')
+            print ("GHS balance: %s" % GHSBalance)
+            print ("")
 
-        TargetCoin = GetTargetCoin(context)
+            TargetCoin = GetTargetCoin(context)
 
-        print ("Target Coin set to: %s" % TargetCoin)
-        print ("")
+            print ("Target Coin set to: %s" % TargetCoin)
+            print ("")
 
-        if (TargetCoin == "BTC"):
-            ReinvestCoin(context, "NMC", NMCThreshold, TargetCoin )
-            ReinvestCoin(context, "BTC", BTCThreshold, "GHS" )
+            if (TargetCoin == "BTC"):
+                ReinvestCoin(context, "NMC", NMCThreshold, TargetCoin )
+                ReinvestCoin(context, "BTC", BTCThreshold, "GHS" )
 
-        if (TargetCoin == "NMC"):
-            ReinvestCoin(context, "BTC", BTCThreshold, TargetCoin )
-            ReinvestCoin(context, "NMC", NMCThreshold, "GHS" )
+            if (TargetCoin == "NMC"):
+                ReinvestCoin(context, "BTC", BTCThreshold, TargetCoin )
+                ReinvestCoin(context, "NMC", NMCThreshold, "GHS" )
+
+        except urllib2.HTTPError, err:
+            print ("HTTPError :%s" % err)
+
+        except:
+            print ("Unexpected error:")
+            print ( sys.exc_info()[0] )
+            print ("An error occurred, skipping cycle")
 
         cycle = 150
 
