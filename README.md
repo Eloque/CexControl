@@ -22,7 +22,8 @@ If that is the case, the script will retrieve both Bid and Ask prices and averag
 ### Support & Donations
 I code this for my own benefit as much as the communities. I firmly believe there should be more alternatives for every problem that software can tackle, so people have choice. Also I don't believe an idea, an algorithm or such can be owned. As such, this simple thing is opensource. If you do feel like tipping me, that can be done in a few different ways.
 
-First of all, BitCoins: 1Lehv8uMSMyYyY7ZFTN1NiRj8X24E56rvV
+First of all, BitCoins: 
+1Lehv8uMSMyYyY7ZFTN1NiRj8X24E56rvV
 <img style="float:right" src="https://raw.github.com/Eloque/CexControl/master/donate.png" />
 
 You could also start using Cex.IO via my referral code: https://cex.io/r/1/Eloque/0/.
