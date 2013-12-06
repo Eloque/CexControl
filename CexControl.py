@@ -22,10 +22,11 @@ import sys
 ## just place till P3
 import urllib2
 
-version = "0.5.4"
+version = "0.5.6"
 
 NMCThreshold = 0.00010000
 BTCThreshold = 0.00000100
+EfficiencyThreshold = 2.5
 
 def LoadSettings():
 
@@ -127,15 +128,33 @@ def main():
 
             TargetCoin = GetTargetCoin(context)
 
-            print ("Target Coin set to: %s" % TargetCoin)
+            print ("Target Coin set to: %s" % TargetCoin[0])
             print ("")
 
-            if (TargetCoin == "BTC"):
-                ReinvestCoin(context, "NMC", NMCThreshold, TargetCoin )
+            print ( "Efficiency threshold: %s" % EfficiencyThreshold )
+            print ( "Efficiency possible: %0.2f" % TargetCoin[1] )
+            
+            if (TargetCoin[1] >= EfficiencyThreshold ):
+                arbitrate = True
+                print ("Arbitration desired, trade coins for target coin")
+            else:
+                arbitrate = False
+                print ("Arbitration not desired, hold non target coins this cycle")
+
+            print ("")
+            PrintBalance( context, "BTC")
+            PrintBalance( context, "NMC")                
+                
+            if (TargetCoin[0] == "BTC"):               
+                if ( arbitrate ):
+                    ReinvestCoin(context, "NMC", NMCThreshold, TargetCoin[0] )
+                
                 ReinvestCoin(context, "BTC", BTCThreshold, "GHS" )
 
-            if (TargetCoin == "NMC"):
-                ReinvestCoin(context, "BTC", BTCThreshold, TargetCoin )
+            if (TargetCoin[0] == "NMC"):               
+                if ( arbitrate ):
+                    ReinvestCoin(context, "BTC", BTCThreshold, TargetCoin[0] )
+                    
                 ReinvestCoin(context, "NMC", NMCThreshold, "GHS" )
 
         except urllib2.HTTPError, err:
@@ -266,15 +285,21 @@ def ParseArguments():
                 print ("  Delete settings and create new")
                 CreateSettings()
 
-## Reinvest a coin
-## only does a saldo check now....
-def ReinvestCoin(Context, CoinName, Threshold, TargetCoin ):
+
+## Print the balance of a Coin
+def PrintBalance( Context, CoinName):
 
     Saldo = GetBalance(Context, CoinName)
 
     print ("%s" % CoinName, end = " ")
     print ("Balance: %.8f" % Saldo)
+    
 
+## Reinvest a coin
+def ReinvestCoin(Context, CoinName, Threshold, TargetCoin ):
+
+    Saldo = GetBalance(Context, CoinName)
+    
     if ( Saldo > Threshold ):
 
         TradeCoin( Context, CoinName, TargetCoin )
@@ -374,14 +399,17 @@ def GetTargetCoin(Context):
     print ("1 NMC via BTC is %s GHS" % FormatFloat(NMCviaBTC), end = " " )
     print ("Efficiency : %2.2f" % NMCviaBTCPercentage)
 
-
     if NMCviaBTCPercentage > BTCviaNMCPercentage:
-        returnvalue = ("BTC")
+        coin = "BTC"
+        efficiency = NMCviaBTCPercentage - 100
     else:
-        returnvalue = ("NMC")
+        coin = "NMC"
+        efficiency = BTCviaNMCPercentage - 100
 
+    returnvalue = (coin, efficiency)
+    
     print ("")
-    print ("Buy %s" % returnvalue, end = " " )
+    print ("Buy %s" % coin, end = " " )
     print ("then use that to buy GHS")
 
     return returnvalue

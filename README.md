@@ -31,6 +31,11 @@ Vouchers via Cex.IO can of course also be used.
 I will accept and appreciate every and all donations.
 
 ### Version history
+#### Version 0.5.6
+- Added arbitration threshold at 2.5%
+- Improved error handling on first connect
+- Function for PrintBalance
+
 #### Version 0.5.4
 - Cleaned up unused code
 - Improved error handling
