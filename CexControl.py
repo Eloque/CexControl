@@ -22,7 +22,7 @@ import sys
 ## just place till P3
 import urllib2
 
-version = "0.6.4"
+version = "0.6.5"
 
 class Settings:
 
@@ -173,6 +173,10 @@ def main():
         print ("GHS balance   : %s" % balance['GHS']['available'])
 
         print ("========================================")
+
+        print ("BTC Threshold: %0.8f" % settings.BTCThreshold)
+        print ("NMC Threshold: %0.8f" % settings.NMCThreshold)
+        print ("Efficiency Threshold: %s" % settings.EfficiencyThreshold)
 
     except:
         print ("== !! ============================ !! ==")

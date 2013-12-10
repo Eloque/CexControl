@@ -35,6 +35,9 @@ I will accept and appreciate every and all donations.
 
 ### Version history
 
+#### Version 0.6.5
+- Added visual confirmation of settings
+
 #### Version 0.6.4
 - Added option to set thresholds
 - Improved error handling
