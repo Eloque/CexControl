@@ -4,18 +4,21 @@ CexControl is a simple utility script to manage mining reinvestments on Cex.IO, 
 This is Beta software. Use at your own risk.
 
 ### Installation
-Put all the files in a user writeable directory. 
+Put all the files in a user writeable directory.
 
 ### User guide
 #### To start
 Run the script on a commandline, ie, "python ./CexControl.py"
 The script will detect if there is a configuration file or not, and prompt for user input if not.
 
+To find out what version you are running, run the script on a commandline with the argument parameter, ie, "python ./CexControl.py version"
+
 #### To configre
 To create a new configuration, start with "python ./CexControl.py newconfig", this will delete the existing configuration.
+To just change the thresholds, start with "python ./CexControl.py setthreshold", this will prompt for new thresholds. Please fill in decimals.
 
 ### Features
-The script will run and check every 5 minutes if there are more then 0.0001 BTC or NMC available. 
+The script will run and check every 5 minutes if there are more then 0.0001 BTC or NMC available.
 
 If that is the case, the script will retrieve both Bid and Ask prices and average those in a on order spending as close to maximum as possible. If those orders are not fulfilled within 5 minutes, they will be canceled and new orders put in.
 
@@ -31,6 +34,12 @@ Vouchers via Cex.IO can of course also be used.
 I will accept and appreciate every and all donations.
 
 ### Version history
+
+#### Version 0.6.4
+- Added option to set thresholds
+- Improved error handling
+- Added settings object
+
 #### Version 0.5.6
 - Added arbitration threshold at 2.5%
 - Improved error handling on first connect
@@ -40,7 +49,7 @@ I will accept and appreciate every and all donations.
 - Cleaned up unused code
 - Improved error handling
 - Handle HTTP disconnects
-- Changed Print function to account for Python3 
+- Changed Print function to account for Python3
 - General code improvements
 
 #### Version 0.4.12

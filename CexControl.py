@@ -22,46 +22,120 @@ import sys
 ## just place till P3
 import urllib2
 
-version = "0.5.6"
+version = "0.6.4"
 
-NMCThreshold = 0.00010000
-BTCThreshold = 0.00000100
-EfficiencyThreshold = 2.5
+class Settings:
 
-def LoadSettings():
+    def __init__(self):
 
-    print ("Attempting to load Settings")
+        self.NMCThreshold = 0.0
+        self.BTCThreshold = 0.0
+        self.EfficiencyThreshold = 1.0
 
-    try:
+        self.username    = ""
+        self.api_key     = ""
+        self.api_secret  = ""
 
-        fp = open("CexControlSettings.conf")
-        settings = json.load(fp)
+    def LoadSettings(self):
 
-        if ( settings ):
-            print ("File found, loading")
+        print ("Attempting to load Settings")
 
-    except IOError:
-        print ("Could not open file, attempting to create new one")
-        CreateSettings()
-        settings = LoadSettings()
+        try:
 
-    return settings
+            fp = open("CexControlSettings.conf")
+            LoadedFromFile = json.load(fp)
 
-def CreateSettings():
+            self.username    = str(LoadedFromFile['username'])
+            self.api_key     = str(LoadedFromFile['key'])
+            self.api_secret  = str(LoadedFromFile['secret'])
+
+            try:
+                self.NMCThreshold = float(LoadedFromFile['NMCThreshold'])
+            except:
+                print ("NMC Threshold Setting not present, using default")
+
+            try:
+                self.BTCThreshold = float(LoadedFromFile['BTCThreshold'])
+            except:
+                print ("BTC Threshold Setting not present, using default")
+
+            try:
+                self.EfficiencyThreshold = float(LoadedFromFile['EfficiencyThreshold'])
+            except:
+                print ("Efficiency Threshold Setting not present, using default")
+
+
+            if ( LoadedFromFile ):
+                print ("File found, loaded")
+
+        except IOError:
+            print ("Could not open file, attempting to create new one")
+            self.CreateSettings()
+            self.LoadSettings()
+
+        ## sself.WriteSettings()
+
+    def CreateSettings(self):
+
+        print ("")
+        print ("Please enter your credentials")
+        print ("")
+        self.username = raw_input("Username: ")
+        self.key      = raw_input("API Key: ")
+        self.secret   = raw_input("API Secret: ")
+
+        self.CreateTresholds()
+
+        self.WriteSettings()
+
+    def WriteSettings(self):
+
+        ToFile = { "username"               :str(self.username),
+                   "key"                    :str(self.api_key),
+                   "secret"                 :str(self.api_secret),
+                   "BTCThreshold"           :str(self.BTCThreshold),
+                   "NMCThreshold"           :str(self.NMCThreshold),
+                   "EfficiencyThreshold"    :str(self.EfficiencyThreshold),
+                 }
+
+        try:
+            print ("")
+            print ("Configuration created, attempting save")
+            json.dump(ToFile, open("CexControlSettings.conf", 'w'))
+            print ("Save successfull, attempting reload")
+        except:
+            print (sys.exc_info())
+            print ("Failed to write configuration file, giving up")
+            exit()
+
+    def CreateTresholds(self):
+
+        print ("")
+        print ("Please enter your thresholds")
+        print ("")
+        self.BTCThreshold   = raw_input("Threshold to trade BTC: ")
+        self.NMCThreshold   = raw_input("Threshold to trade NMC: ")
+        self.EfficiencyThreshold   = raw_input("Efficiency at which to arbitrate: ")
+
+        self.WriteSettings()
+
+    ## Simply return the context, based on user name, key and secret
+    def GetContext(self):
+
+        return cexapi.api(self.username, self.api_key, self.api_secret)
+
+def SetThresholds():
 
     print ("")
-    print ("Please enter your credentials")
+    print ("Please enter the desired thresholds")
     print ("")
-    username = raw_input("Username: ")
-    key      = raw_input("API Key: ")
-    secret   = raw_input("API Secret: ")
-
-    settings = { "username":str(username), "key":str(key), "secret":str(secret) }
+    settings.EfficiencyThreshold = raw_input("At what threshold to arbitrate, format in percentage ( 2.5 ): ")
 
     try:
         json.dump(settings, open("CexControlSettings.conf", 'w'))
         print ("")
         print ("Configuration file created, attempting reload")
+        self.LoadSettings()
         print ("")
     except:
         print (sys.exc_info())
@@ -72,25 +146,30 @@ def main():
 
     print ("======= CexControl version %s =======" % version)
 
-    ParseArguments()
+    ## First, try to get the configuration settings in the settings object
+    settings = Settings()
+    settings.LoadSettings()
+
+
+    ParseArguments(settings)
+
+##    try:
+        ## settings = LoadSettings()
+##    except:
+##        print ("Could not load settings, exiting")
+##        exit()
+
+##    username    = str(settings['username'])
+ ##   api_key     = str(settings['key'])
+  ##  api_secret  = str(settings['secret'])
 
     try:
-        settings = LoadSettings()
-    except:
-        print ("Could not load settings, exiting")
-        exit()
-
-    username    = str(settings['username'])
-    api_key     = str(settings['key'])
-    api_secret  = str(settings['secret'])
-
-    try:
-        context = cexapi.api(username, api_key, api_secret)
+        context = settings.GetContext()
         balance = context.balance()
 
         print ("========================================")
 
-        print ("Account       : %s" % username)
+        print ("Account       : %s" % settings.username )
         print ("GHS balance   : %s" % balance['GHS']['available'])
 
         print ("========================================")
@@ -117,7 +196,7 @@ def main():
             now = time.asctime( time.localtime(time.time()) )
 
             print ("")
-            print ("%s" % now)
+            print ("Start cycle at %s" % now)
 
             CancelOrder(context)
 
@@ -131,10 +210,10 @@ def main():
             print ("Target Coin set to: %s" % TargetCoin[0])
             print ("")
 
-            print ( "Efficiency threshold: %s" % EfficiencyThreshold )
+            print ( "Efficiency threshold: %s" % settings.EfficiencyThreshold )
             print ( "Efficiency possible: %0.2f" % TargetCoin[1] )
-            
-            if (TargetCoin[1] >= EfficiencyThreshold ):
+
+            if (TargetCoin[1] >= settings.EfficiencyThreshold ):
                 arbitrate = True
                 print ("Arbitration desired, trade coins for target coin")
             else:
@@ -143,19 +222,19 @@ def main():
 
             print ("")
             PrintBalance( context, "BTC")
-            PrintBalance( context, "NMC")                
-                
-            if (TargetCoin[0] == "BTC"):               
-                if ( arbitrate ):
-                    ReinvestCoin(context, "NMC", NMCThreshold, TargetCoin[0] )
-                
-                ReinvestCoin(context, "BTC", BTCThreshold, "GHS" )
+            PrintBalance( context, "NMC")
 
-            if (TargetCoin[0] == "NMC"):               
+            if (TargetCoin[0] == "BTC"):
                 if ( arbitrate ):
-                    ReinvestCoin(context, "BTC", BTCThreshold, TargetCoin[0] )
-                    
-                ReinvestCoin(context, "NMC", NMCThreshold, "GHS" )
+                    ReinvestCoin(context, "NMC", settings.NMCThreshold, TargetCoin[0] )
+
+                ReinvestCoin(context, "BTC", settings.BTCThreshold, "GHS" )
+
+            if (TargetCoin[0] == "NMC"):
+                if ( arbitrate ):
+                    ReinvestCoin(context, "BTC", settings.BTCThreshold, TargetCoin[0] )
+
+                ReinvestCoin(context, "NMC", settings.NMCThreshold, "GHS" )
 
         except urllib2.HTTPError, err:
             print ("HTTPError :%s" % err)
@@ -165,12 +244,14 @@ def main():
             print ( sys.exc_info()[0] )
             print ("An error occurred, skipping cycle")
 
+        print("")
+
         cycle = 150
+        print("Cycle completed, idle for %s seconds" % cycle)
 
         while cycle > 0:
-            cycle = cycle - 1
-            time.sleep(1)
-
+            time.sleep(10)
+            cycle = cycle - 10
 
     pass
 
@@ -197,7 +278,6 @@ def ConvertUnicodeFloatToFloat( UnicodeFloat ):
         NewFloat = MostSignificant + LeastSignificant
     else:
         NewFloat = float(UnicodeFloat)
-
 
     return NewFloat
 
@@ -268,7 +348,7 @@ def GetContext():
 
     return context
 
-def ParseArguments():
+def ParseArguments(settings):
     arguments = sys.argv
 
     if (len(arguments) > 1):
@@ -283,8 +363,16 @@ def ParseArguments():
             if argument == "newconfig":
                 print ("newconfig:")
                 print ("  Delete settings and create new")
-                CreateSettings()
+                settings.CreateSettings()
 
+            if argument == "setthreshold":
+                print ("setthreshold:")
+                print ("  Creeate new threshold settings")
+                settings.CreateTresholds()
+
+            if argument == "version":
+                print ("Version: %s" % version )
+                exit()
 
 ## Print the balance of a Coin
 def PrintBalance( Context, CoinName):
@@ -293,13 +381,13 @@ def PrintBalance( Context, CoinName):
 
     print ("%s" % CoinName, end = " ")
     print ("Balance: %.8f" % Saldo)
-    
+
 
 ## Reinvest a coin
 def ReinvestCoin(Context, CoinName, Threshold, TargetCoin ):
 
     Saldo = GetBalance(Context, CoinName)
-    
+
     if ( Saldo > Threshold ):
 
         TradeCoin( Context, CoinName, TargetCoin )
@@ -320,16 +408,17 @@ def TradeCoin( Context, CoinName, TargetCoin ):
 
     ## Caculate what to buy
     AmountToBuy = Saldo / Price
-    AmountToBuy = round(AmountToBuy-0.0000005,7)
+    AmountToBuy = round(AmountToBuy-0.000005,6)
 
     print ("Amount to buy %.08f" % AmountToBuy)
 
     ## This is an HACK
     Total = AmountToBuy * Price
 
+    ## Adjusted to compensate for floating math conversion
     while ( Total > Saldo ):
         AmountToBuy = AmountToBuy - 0.0000005
-        AmountToBuy = round(AmountToBuy-0.0000005,7)
+        AmountToBuy = round(AmountToBuy-0.000005,6)
 
         print ("")
         print ("To buy adjusted to : %.8f" % AmountToBuy)
@@ -351,7 +440,7 @@ def TradeCoin( Context, CoinName, TargetCoin ):
     print ("")
     print ("Placed order at %s" % TickerName)
     print ("     Buy %.8f" % AmountToBuy, end = " ")
-    print ("at %.10f" % Price)
+    print ("at %.8f" % Price)
     print ("   Total %.8f" % Total)
     print ("   Funds %.8f" % Saldo)
 
@@ -360,6 +449,10 @@ def TradeCoin( Context, CoinName, TargetCoin ):
         print ("Order ID %s" % OrderID)
     except:
         print (result)
+        print (AmountToBuy)
+        print ("%.7f" % Price)
+        print (TickerName)
+
 
     print ("----------------------------------------")
 
@@ -407,7 +500,7 @@ def GetTargetCoin(Context):
         efficiency = BTCviaNMCPercentage - 100
 
     returnvalue = (coin, efficiency)
-    
+
     print ("")
     print ("Buy %s" % coin, end = " " )
     print ("then use that to buy GHS")
