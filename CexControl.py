@@ -22,7 +22,7 @@ import sys
 ## just place till P3
 import urllib2
 
-version = "0.6.5"
+version = "0.6.6"
 
 class Settings:
 
@@ -35,6 +35,8 @@ class Settings:
         self.username    = ""
         self.api_key     = ""
         self.api_secret  = ""
+
+        self.HoldCoins = False
 
     def LoadSettings(self):
 
@@ -63,6 +65,12 @@ class Settings:
                 self.EfficiencyThreshold = float(LoadedFromFile['EfficiencyThreshold'])
             except:
                 print ("Efficiency Threshold Setting not present, using default")
+                
+            try:
+                self.HoldCoins = bool(LoadedFromFile['HoldCoins'])
+            except:
+                print ("Hold Coins Setting not present, using default")
+                
 
 
             if ( LoadedFromFile ):
@@ -80,9 +88,9 @@ class Settings:
         print ("")
         print ("Please enter your credentials")
         print ("")
-        self.username = raw_input("Username: ")
-        self.key      = raw_input("API Key: ")
-        self.secret   = raw_input("API Secret: ")
+        self.username     = raw_input("Username: ")
+        self.api_key      = raw_input("API Key: ")
+        self.api_secret   = raw_input("API Secret: ")
 
         self.CreateTresholds()
 
@@ -96,6 +104,7 @@ class Settings:
                    "BTCThreshold"           :str(self.BTCThreshold),
                    "NMCThreshold"           :str(self.NMCThreshold),
                    "EfficiencyThreshold"    :str(self.EfficiencyThreshold),
+                   "HoldCoins"              :bool(self.HoldCoins),
                  }
 
         try:
@@ -116,6 +125,12 @@ class Settings:
         self.BTCThreshold   = raw_input("Threshold to trade BTC: ")
         self.NMCThreshold   = raw_input("Threshold to trade NMC: ")
         self.EfficiencyThreshold   = raw_input("Efficiency at which to arbitrate: ")
+        self.HoldCoins = raw_input("Hold Coins at low efficiency (Yes/No): ")
+        
+        if (self.HoldCoins == "Yes" ):
+            self.HoldCoins = True
+        else:
+            self.HoldCoins = False
 
         self.WriteSettings()
 
@@ -123,24 +138,6 @@ class Settings:
     def GetContext(self):
 
         return cexapi.api(self.username, self.api_key, self.api_secret)
-
-def SetThresholds():
-
-    print ("")
-    print ("Please enter the desired thresholds")
-    print ("")
-    settings.EfficiencyThreshold = raw_input("At what threshold to arbitrate, format in percentage ( 2.5 ): ")
-
-    try:
-        json.dump(settings, open("CexControlSettings.conf", 'w'))
-        print ("")
-        print ("Configuration file created, attempting reload")
-        self.LoadSettings()
-        print ("")
-    except:
-        print (sys.exc_info())
-        print ("Failed to write configuration file, giving up")
-        exit()
 
 def main():
 
@@ -177,6 +174,7 @@ def main():
         print ("BTC Threshold: %0.8f" % settings.BTCThreshold)
         print ("NMC Threshold: %0.8f" % settings.NMCThreshold)
         print ("Efficiency Threshold: %s" % settings.EfficiencyThreshold)
+        print ("Hold coins below efficiency threshold: %s" % settings.HoldCoins)
 
     except:
         print ("== !! ============================ !! ==")
@@ -222,7 +220,10 @@ def main():
                 print ("Arbitration desired, trade coins for target coin")
             else:
                 arbitrate = False
-                print ("Arbitration not desired, hold non target coins this cycle")
+                if ( settings.HoldCoins == True ):
+                    print ("Arbitration not desired, hold non target coins this cycle")
+                else:
+                    print ("Arbitration not desired, reinvest all coins this cycle")
 
             print ("")
             PrintBalance( context, "BTC")
@@ -231,12 +232,19 @@ def main():
             if (TargetCoin[0] == "BTC"):
                 if ( arbitrate ):
                     ReinvestCoin(context, "NMC", settings.NMCThreshold, TargetCoin[0] )
+                else:
+                    if ( settings.HoldCoins == False ):
+                        ReinvestCoin(context, "NMC", settings.NMCThreshold, "GHS" )
 
                 ReinvestCoin(context, "BTC", settings.BTCThreshold, "GHS" )
 
             if (TargetCoin[0] == "NMC"):
                 if ( arbitrate ):
                     ReinvestCoin(context, "BTC", settings.BTCThreshold, TargetCoin[0] )
+                else:
+                    if ( settings.HoldCoins == False ):
+                        ReinvestCoin(context, "BTC", settings.BTCThreshold, "GHS" )
+
 
                 ReinvestCoin(context, "NMC", settings.NMCThreshold, "GHS" )
 
@@ -354,7 +362,7 @@ def GetContext():
 
 def ParseArguments(settings):
     arguments = sys.argv
-
+    
     if (len(arguments) > 1):
         print ("CexControl started with arguments")
         print ("")
@@ -373,6 +381,7 @@ def ParseArguments(settings):
                 print ("setthreshold:")
                 print ("  Creeate new threshold settings")
                 settings.CreateTresholds()
+                settings.LoadSettings()
 
             if argument == "version":
                 print ("Version: %s" % version )
@@ -550,7 +559,7 @@ def GetPrice(Context, Ticker):
     Price = (Ask+Bid) / 2
 
     ## Change price to 7 decimals
-    Price = round(Price,8)
+    Price = round(Price,7)
 
     ##print Price
     ##Price = int(Price * INTEGERMATH)

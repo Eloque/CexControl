@@ -35,6 +35,11 @@ I will accept and appreciate every and all donations.
 
 ### Version history
 
+#### Version 0.6.6
+- Added hold coins
+- Fix for price, to round of to 7 decimals
+- Fixed bug with empty API key and secret on new config
+
 #### Version 0.6.5
 - Added visual confirmation of settings
 
