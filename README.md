@@ -22,6 +22,8 @@ The script will run and check every 5 minutes if there are more then 0.0001 BTC 
 
 If that is the case, the script will retrieve both Bid and Ask prices and average those in a on order spending as close to maximum as possible. If those orders are not fulfilled within 5 minutes, they will be canceled and new orders put in.
 
+The script will log all it's output to file as well. It is recommended to rotate this file.
+
 ### Support & Donations
 I code this for my own benefit as much as the communities. I firmly believe there should be more alternatives for every problem that software can tackle, so people have choice. Also I don't believe an idea, an algorithm or such can be owned. As such, this simple thing is opensource. If you do feel like tipping me, that can be done in a few different ways.
 
@@ -34,6 +36,11 @@ Vouchers via Cex.IO can of course also be used.
 I will accept and appreciate every and all donations.
 
 ### Version history
+
+#### Version 0.7.0
+- Changed logging mechanism
+- Added GUI hooks
+- Added log to file
 
 #### Version 0.6.6
 - Added hold coins
