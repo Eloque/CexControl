@@ -22,7 +22,11 @@ import sys
 ## just place till P3
 import urllib2
 
-version = "0.6.6"
+version = "0.7.0"
+
+## Get Loggin obect
+from Log import Logger
+log = Logger()
 
 class Settings:
 
@@ -40,7 +44,7 @@ class Settings:
 
     def LoadSettings(self):
 
-        print ("Attempting to load Settings")
+        log.Output ("Attempting to load Settings")
 
         try:
 
@@ -54,30 +58,30 @@ class Settings:
             try:
                 self.NMCThreshold = float(LoadedFromFile['NMCThreshold'])
             except:
-                print ("NMC Threshold Setting not present, using default")
+                log.Output ("NMC Threshold Setting not present, using default")
 
             try:
                 self.BTCThreshold = float(LoadedFromFile['BTCThreshold'])
             except:
-                print ("BTC Threshold Setting not present, using default")
+                log.Output ("BTC Threshold Setting not present, using default")
 
             try:
                 self.EfficiencyThreshold = float(LoadedFromFile['EfficiencyThreshold'])
             except:
-                print ("Efficiency Threshold Setting not present, using default")
+                log.Output ("Efficiency Threshold Setting not present, using default")
                 
             try:
                 self.HoldCoins = bool(LoadedFromFile['HoldCoins'])
             except:
-                print ("Hold Coins Setting not present, using default")
+                log.Output ("Hold Coins Setting not present, using default")
                 
 
 
             if ( LoadedFromFile ):
-                print ("File found, loaded")
+                log.Output ("File found, loaded")
 
         except IOError:
-            print ("Could not open file, attempting to create new one")
+            log.Output ("Could not open file, attempting to create new one")
             self.CreateSettings()
             self.LoadSettings()
 
@@ -85,9 +89,9 @@ class Settings:
 
     def CreateSettings(self):
 
-        print ("")
-        print ("Please enter your credentials")
-        print ("")
+        log.Output ("")
+        log.Output ("Please enter your credentials")
+        log.Output ("")
         self.username     = raw_input("Username: ")
         self.api_key      = raw_input("API Key: ")
         self.api_secret   = raw_input("API Secret: ")
@@ -108,20 +112,20 @@ class Settings:
                  }
 
         try:
-            print ("")
-            print ("Configuration created, attempting save")
+            log.Output ("")
+            log.Output ("Configuration created, attempting save")
             json.dump(ToFile, open("CexControlSettings.conf", 'w'))
-            print ("Save successfull, attempting reload")
+            log.Output ("Save successfull, attempting reload")
         except:
-            print (sys.exc_info())
-            print ("Failed to write configuration file, giving up")
+            log.Output (sys.exc_info())
+            log.Output ("Failed to write configuration file, giving up")
             exit()
 
     def CreateTresholds(self):
 
-        print ("")
-        print ("Please enter your thresholds")
-        print ("")
+        log.Output ("")
+        log.Output ("Please enter your thresholds")
+        log.Output ("")
         self.BTCThreshold   = raw_input("Threshold to trade BTC: ")
         self.NMCThreshold   = raw_input("Threshold to trade NMC: ")
         self.EfficiencyThreshold   = raw_input("Efficiency at which to arbitrate: ")
@@ -141,93 +145,82 @@ class Settings:
 
 def main():
 
-    print ("======= CexControl version %s =======" % version)
+    log.Output ("======= CexControl version %s =======" % version)
 
     ## First, try to get the configuration settings in the settings object
     settings = Settings()
     settings.LoadSettings()
 
-
     ParseArguments(settings)
-
-##    try:
-        ## settings = LoadSettings()
-##    except:
-##        print ("Could not load settings, exiting")
-##        exit()
-
-##    username    = str(settings['username'])
- ##   api_key     = str(settings['key'])
-  ##  api_secret  = str(settings['secret'])
 
     try:
         context = settings.GetContext()
         balance = context.balance()
 
-        print ("========================================")
+        log.Output ("========================================")
 
-        print ("Account       : %s" % settings.username )
-        print ("GHS balance   : %s" % balance['GHS']['available'])
+        log.Output ("Account       : %s" % settings.username )
+        log.Output ("GHS balance   : %s" % balance['GHS']['available'])
 
-        print ("========================================")
+        log.Output ("========================================")
 
-        print ("BTC Threshold: %0.8f" % settings.BTCThreshold)
-        print ("NMC Threshold: %0.8f" % settings.NMCThreshold)
-        print ("Efficiency Threshold: %s" % settings.EfficiencyThreshold)
-        print ("Hold coins below efficiency threshold: %s" % settings.HoldCoins)
+        log.Output ("BTC Threshold: %0.8f" % settings.BTCThreshold)
+        log.Output ("NMC Threshold: %0.8f" % settings.NMCThreshold)
+        log.Output ("Efficiency Threshold: %s" % settings.EfficiencyThreshold)
+        log.Output ("Hold coins below efficiency threshold: %s" % settings.HoldCoins)
 
     except:
-        print ("== !! ============================ !! ==")
-        print ("Error:")
+        log.Output ("== !! ============================ !! ==")
+        log.Output ("Error:")
 
         try:
             ErrorMessage = balance['error']
         except:
             ErrorMessage = ("Unkown")
 
-        print(ErrorMessage)
+        log.Output(ErrorMessage)
 
-        print ("")
+        log.Output ("")
 
-        print ("Could not connect Cex.IO, exiting")
-        print ("== !! ============================ !! ==")
+        log.Output ("Could not connect Cex.IO, exiting")
+        log.Output ("== !! ============================ !! ==")
         exit()
 
     while True:
         try:
             now = time.asctime( time.localtime(time.time()) )
 
-            print ("")
-            print ("Start cycle at %s" % now)
+            log.Output ("")
+            log.Output ("Start cycle at %s" % now)
 
             CancelOrder(context)
 
             ##balance = context.balance()
             GHSBalance = GetBalance(context, 'GHS')
-            print ("GHS balance: %s" % GHSBalance)
-            print ("")
+            log.Output ("GHS balance: %s" % GHSBalance)
+            log.Output ("")
 
             TargetCoin = GetTargetCoin(context)
 
-            print ("Target Coin set to: %s" % TargetCoin[0])
-            print ("")
+            log.Output ("Target Coin set to: %s" % TargetCoin[0])
+            log.Output ("")
 
-            print ( "Efficiency threshold: %s" % settings.EfficiencyThreshold )
-            print ( "Efficiency possible: %0.2f" % TargetCoin[1] )
+            log.Output ( "Efficiency threshold: %s" % settings.EfficiencyThreshold )
+            log.Output ( "Efficiency possible: %0.2f" % TargetCoin[1] )
 
             if (TargetCoin[1] >= settings.EfficiencyThreshold ):
                 arbitrate = True
-                print ("Arbitration desired, trade coins for target coin")
+                log.Output ("Arbitration desired, trade coins for target coin")
             else:
                 arbitrate = False
                 if ( settings.HoldCoins == True ):
-                    print ("Arbitration not desired, hold non target coins this cycle")
+                    log.Output ("Arbitration not desired, hold non target coins this cycle")
                 else:
-                    print ("Arbitration not desired, reinvest all coins this cycle")
+                    log.Output ("Arbitration not desired, reinvest all coins this cycle")
 
-            print ("")
-            PrintBalance( context, "BTC")
-            PrintBalance( context, "NMC")
+            log.Output ("")
+            log.OutputBalance( context, "BTC")
+            log.OutputBalance( context, "NMC")
 
             if (TargetCoin[0] == "BTC"):
                 if ( arbitrate ):
@@ -249,17 +242,17 @@ def main():
                 ReinvestCoin(context, "NMC", settings.NMCThreshold, "GHS" )
 
         except urllib2.HTTPError, err:
-            print ("HTTPError :%s" % err)
+            log.Output ("HTTPError :%s" % err)
 
         except:
-            print ("Unexpected error:")
-            print ( sys.exc_info()[0] )
-            print ("An error occurred, skipping cycle")
+            log.Output ("Unexpected error:")
+            log.Output ( sys.exc_info()[0] )
+            log.Output ("An error occurred, skipping cycle")
 
-        print("")
+        log.Output("")
 
         cycle = 150
-        print("Cycle completed, idle for %s seconds" % cycle)
+        log.Output("Cycle completed, idle for %s seconds" % cycle)
 
         while cycle > 0:
             time.sleep(10)
@@ -299,27 +292,27 @@ def CancelOrder(context):
     for item in order:
         try:
             context.cancel_order(item['id'])
-            print ("GHS/BTC Order %s canceled" % item['id'])
+            log.Output ("GHS/BTC Order %s canceled" % item['id'])
         except:
-            print ("Cancel order failed")
+            log.Output ("Cancel order failed")
 
     ## NMC Order cancel
     order = context.current_orders("GHS/NMC")
     for item in order:
         try:
             context.cancel_order(item['id'])
-            print ("GHS/NMC Order %s canceled" % item['id'])
+            log.Output ("GHS/NMC Order %s canceled" % item['id'])
         except:
-            print ("Cancel order failed")
+            log.Output ("Cancel order failed")
 
     ## NMC Order cancel
     order = context.current_orders("NMC/BTC")
     for item in order:
         try:
             context.cancel_order(item['id'])
-            print ("BTC/NMC Order %s canceled" % item['id'])
+            log.Output ("BTC/NMC Order %s canceled" % item['id'])
         except:
-            print ("Cancel order failed")
+            log.Output ("Cancel order failed")
 
 ## Get the balance of certain type of Coin
 def GetBalance(Context, CoinName):
@@ -334,7 +327,7 @@ def GetBalance(Context, CoinName):
         Saldo = ConvertUnicodeFloatToFloat(Coin["available"])
 
     except:
-        print (balance)
+        log.Output (balance)
         Saldo = 0
 
     return Saldo
@@ -345,7 +338,7 @@ def GetContext():
     try:
         settings = LoadSettings()
     except:
-        print ("Could not load settings, exiting")
+        log.Output ("Could not load settings, exiting")
         exit()
 
     username    = str(settings['username'])
@@ -356,7 +349,7 @@ def GetContext():
         context = cexapi.api(username, api_key, api_secret)
 
     except:
-        print (context)
+        log.Output (context)
 
     return context
 
@@ -364,8 +357,8 @@ def ParseArguments(settings):
     arguments = sys.argv
     
     if (len(arguments) > 1):
-        print ("CexControl started with arguments")
-        print ("")
+        log.Output ("CexControl started with arguments")
+        log.Output ("")
 
         ## Remove the filename itself
         del arguments[0]
@@ -373,27 +366,27 @@ def ParseArguments(settings):
         for argument in arguments:
 
             if argument == "newconfig":
-                print ("newconfig:")
-                print ("  Delete settings and create new")
+                log.Output ("newconfig:")
+                log.Output ("  Delete settings and create new")
                 settings.CreateSettings()
 
             if argument == "setthreshold":
-                print ("setthreshold:")
-                print ("  Creeate new threshold settings")
+                log.Output ("setthreshold:")
+                log.Output ("  Creeate new threshold settings")
                 settings.CreateTresholds()
                 settings.LoadSettings()
 
             if argument == "version":
-                print ("Version: %s" % version )
+                log.Output ("Version: %s" % version )
                 exit()
 
-## Print the balance of a Coin
+## log.Output the balance of a Coin
 def PrintBalance( Context, CoinName):
 
     Saldo = GetBalance(Context, CoinName)
 
-    print ("%s" % CoinName, end = " ")
-    print ("Balance: %.8f" % Saldo)
+    log.Output ("%s" % CoinName, end = " ")
+    log.Output ("Balance: %.8f" % Saldo)
 
 
 ## Reinvest a coin
@@ -412,18 +405,18 @@ def TradeCoin( Context, CoinName, TargetCoin ):
     ## Get the Price of the TargetCoin
     Price = GetPriceByCoin( Context, CoinName, TargetCoin )
 
-    print ("----------------------------------------")
+    log.Output ("----------------------------------------")
 
     ## Get the balance of the coin
     Saldo = GetBalance( Context, CoinName)
-    print (CoinName , end = " " )
-    print ("Balance %.8f" % Saldo)
+    log.Output (CoinName , end = " " )
+    log.Output ("Balance %.8f" % Saldo)
 
     ## Caculate what to buy
     AmountToBuy = Saldo / Price
     AmountToBuy = round(AmountToBuy-0.000005,6)
 
-    print ("Amount to buy %.08f" % AmountToBuy)
+    log.Output ("Amount to buy %.08f" % AmountToBuy)
 
     ## This is an HACK
     Total = AmountToBuy * Price
@@ -433,8 +426,8 @@ def TradeCoin( Context, CoinName, TargetCoin ):
         AmountToBuy = AmountToBuy - 0.0000005
         AmountToBuy = round(AmountToBuy-0.000005,6)
 
-        print ("")
-        print ("To buy adjusted to : %.8f" % AmountToBuy)
+        log.Output ("")
+        log.Output ("To buy adjusted to : %.8f" % AmountToBuy)
         Total = AmountToBuy * Price
 
     TickerName = GetTickerName( CoinName, TargetCoin )
@@ -444,30 +437,30 @@ def TradeCoin( Context, CoinName, TargetCoin ):
     if TargetCoin == "BTC":
         action = 'sell'
         AmountToBuy = Saldo ## sell the complete balance!
-        print ("To sell adjusted to : %.8f NMC" % AmountToBuy)
+        log.Output ("To sell adjusted to : %.8f NMC" % AmountToBuy)
     else:
         action = 'buy'
 
     result = Context.place_order(action, AmountToBuy, Price, TickerName )
 
-    print ("")
-    print ("Placed order at %s" % TickerName)
-    print ("     Buy %.8f" % AmountToBuy, end = " ")
-    print ("at %.8f" % Price)
-    print ("   Total %.8f" % Total)
-    print ("   Funds %.8f" % Saldo)
+    log.Output ("")
+    log.Output ("Placed order at %s" % TickerName)
+    log.Output ("     Buy %.8f" % AmountToBuy, end = " ")
+    log.Output ("at %.8f" % Price)
+    log.Output ("   Total %.8f" % Total)
+    log.Output ("   Funds %.8f" % Saldo)
 
     try:
         OrderID = result['id']
-        print ("Order ID %s" % OrderID)
+        log.Output ("Order ID %s" % OrderID)
     except:
-        print (result)
-        print (AmountToBuy)
-        print ("%.7f" % Price)
-        print (TickerName)
+        log.Output (result)
+        log.Output (AmountToBuy)
+        log.Output ("%.7f" % Price)
+        log.Output (TickerName)
 
 
-    print ("----------------------------------------")
+    log.Output ("----------------------------------------")
 
 ## Simply reformat a float to 8 numbers behind the comma
 def FormatFloat( number):
@@ -488,10 +481,10 @@ def GetTargetCoin(Context):
     GHS_NMCPrice = 1/GHS_NMCPrice
     GHS_BTCPrice = 1/GHS_BTCPrice
 
-    print ("1 NMC is %s GHS" % FormatFloat(GHS_NMCPrice))
-    print ("1 NMC is %s BTC" % FormatFloat(NMC_BTCPrice))
-    print ("1 BTC is %s GHS" % FormatFloat(GHS_BTCPrice))
-    print ("1 BTC is %s NMC" % FormatFloat(BTC_NMCPrice))
+    log.Output ("1 NMC is %s GHS" % FormatFloat(GHS_NMCPrice))
+    log.Output ("1 NMC is %s BTC" % FormatFloat(NMC_BTCPrice))
+    log.Output ("1 BTC is %s GHS" % FormatFloat(GHS_BTCPrice))
+    log.Output ("1 BTC is %s NMC" % FormatFloat(BTC_NMCPrice))
 
     NMCviaBTC = NMC_BTCPrice * GHS_BTCPrice
     BTCviaNMC = BTC_NMCPrice * GHS_NMCPrice
@@ -499,11 +492,11 @@ def GetTargetCoin(Context):
     BTCviaNMCPercentage = BTCviaNMC / GHS_BTCPrice * 100
     NMCviaBTCPercentage = NMCviaBTC / GHS_NMCPrice * 100
 
-    print ("")
-    print ("1 BTC via NMC is %s GHS" % FormatFloat(BTCviaNMC), end = " " )
-    print ("Efficiency : %2.2f" % BTCviaNMCPercentage)
-    print ("1 NMC via BTC is %s GHS" % FormatFloat(NMCviaBTC), end = " " )
-    print ("Efficiency : %2.2f" % NMCviaBTCPercentage)
+    log.Output ("")
+    log.Output ("1 BTC via NMC is %s GHS" % FormatFloat(BTCviaNMC), end = " " )
+    log.Output ("Efficiency : %2.2f" % BTCviaNMCPercentage)
+    log.Output ("1 NMC via BTC is %s GHS" % FormatFloat(NMCviaBTC), end = " " )
+    log.Output ("Efficiency : %2.2f" % NMCviaBTCPercentage)
 
     if NMCviaBTCPercentage > BTCviaNMCPercentage:
         coin = "BTC"
@@ -514,9 +507,9 @@ def GetTargetCoin(Context):
 
     returnvalue = (coin, efficiency)
 
-    print ("")
-    print ("Buy %s" % coin, end = " " )
-    print ("then use that to buy GHS")
+    log.Output ("")
+    log.Output ("Buy %s" % coin, end = " " )
+    log.Output ("then use that to buy GHS")
 
     return returnvalue
 
@@ -560,9 +553,6 @@ def GetPrice(Context, Ticker):
 
     ## Change price to 7 decimals
     Price = round(Price,7)
-
-    ##print Price
-    ##Price = int(Price * INTEGERMATH)
 
     return Price
 
