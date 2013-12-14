@@ -37,6 +37,9 @@ I will accept and appreciate every and all donations.
 
 ### Version history
 
+#### Version 0.7.1
+- Added timestamp to logfile
+
 #### Version 0.7.0
 - Changed logging mechanism
 - Added GUI hooks

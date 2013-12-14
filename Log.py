@@ -15,10 +15,9 @@
 from __future__ import print_function
 
 from Tkinter import *
+import time
 
 ## This file is meant only for logging purposes, to have a central place to change logging into print or or other statements
-
-
 
 class Logger:
     
@@ -39,6 +38,8 @@ class Logger:
             self.LogText.set( Message )
 
         if self.ToFile == True:
+            self.LogFile.write( str(int(time.time() ) ) ) 
+            self.LogFile.write( " " ) 
             self.LogFile.write( str(Message) )
             self.LogFile.write( '\n' )
             
