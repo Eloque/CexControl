@@ -25,7 +25,10 @@ class Logger:
     ## Start the Logger object, consider it to be standard to StdOut
     def __init__(self):
         self.PrintToStdOut = True
+        self.ToFile = True
         self.LogText = ""
+        
+        self.LogFile = open('CexControl.log', 'a')
         
     def Output( self, Message ):
 
@@ -34,6 +37,11 @@ class Logger:
             print ( Message )
         else:
             self.LogText.set( Message )
+
+        if self.ToFile == True:
+            self.LogFile.write( str(Message) )
+            self.LogFile.write( '\n' )
+            
     
     def SetOutput(self, Value):
         
