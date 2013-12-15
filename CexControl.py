@@ -69,13 +69,11 @@ class Settings:
                 self.EfficiencyThreshold = float(LoadedFromFile['EfficiencyThreshold'])
             except:
                 log.Output ("Efficiency Threshold Setting not present, using default")
-                
+
             try:
                 self.HoldCoins = bool(LoadedFromFile['HoldCoins'])
             except:
                 log.Output ("Hold Coins Setting not present, using default")
-                
-
 
             if ( LoadedFromFile ):
                 log.Output ("File found, loaded")
@@ -130,7 +128,7 @@ class Settings:
         self.NMCThreshold   = raw_input("Threshold to trade NMC: ")
         self.EfficiencyThreshold   = raw_input("Efficiency at which to arbitrate: ")
         self.HoldCoins = raw_input("Hold Coins at low efficiency (Yes/No): ")
-        
+
         if (self.HoldCoins == "Yes" ):
             self.HoldCoins = True
         else:
@@ -355,7 +353,7 @@ def GetContext():
 
 def ParseArguments(settings):
     arguments = sys.argv
-    
+
     if (len(arguments) > 1):
         log.Output ("CexControl started with arguments")
         log.Output ("")
