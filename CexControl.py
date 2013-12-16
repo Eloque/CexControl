@@ -22,7 +22,7 @@ import sys
 ## just place till P3
 import urllib2
 
-version = "0.7.1"
+version = "0.7.2"
 
 ## Get Loggin obect
 from Log import Logger
@@ -216,9 +216,9 @@ def main():
                 else:
                     log.Output ("Arbitration not desired, reinvest all coins this cycle")
 
-            log.Output ("")
-            log.OutputBalance( context, "BTC")
-            log.OutputBalance( context, "NMC")
+            PrintBalance( context, "BTC")
+            PrintBalance( context, "NMC")
+            
 
             if (TargetCoin[0] == "BTC"):
                 if ( arbitrate ):
@@ -383,8 +383,10 @@ def PrintBalance( Context, CoinName):
 
     Saldo = GetBalance(Context, CoinName)
 
-    log.Output ("%s" % CoinName, end = " ")
-    log.Output ("Balance: %.8f" % Saldo)
+    message = "%s " % CoinName
+    message = message + "Balance: %.8f" % Saldo
+
+    log.Output ( message )
 
 
 ## Reinvest a coin
@@ -491,9 +493,9 @@ def GetTargetCoin(Context):
     NMCviaBTCPercentage = NMCviaBTC / GHS_NMCPrice * 100
 
     log.Output ("")
-    log.Output ("1 BTC via NMC is %s GHS" % FormatFloat(BTCviaNMC), end = " " )
+    log.Output ("1 BTC via NMC is %s GHS" % FormatFloat(BTCviaNMC) )
     log.Output ("Efficiency : %2.2f" % BTCviaNMCPercentage)
-    log.Output ("1 NMC via BTC is %s GHS" % FormatFloat(NMCviaBTC), end = " " )
+    log.Output ("1 NMC via BTC is %s GHS" % FormatFloat(NMCviaBTC) )
     log.Output ("Efficiency : %2.2f" % NMCviaBTCPercentage)
 
     if NMCviaBTCPercentage > BTCviaNMCPercentage:
@@ -506,8 +508,8 @@ def GetTargetCoin(Context):
     returnvalue = (coin, efficiency)
 
     log.Output ("")
-    log.Output ("Buy %s" % coin, end = " " )
-    log.Output ("then use that to buy GHS")
+    log.Output ("Buy %s then use that to buy GHS" % coin )
+    
 
     return returnvalue
 

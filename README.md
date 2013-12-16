@@ -37,6 +37,9 @@ I will accept and appreciate every and all donations.
 
 ### Version history
 
+#### Version 0.7.2
+- Fixed various logging errors
+
 #### Version 0.7.1
 - Added timestamp to logfile
 
