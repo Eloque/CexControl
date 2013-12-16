@@ -409,8 +409,7 @@ def TradeCoin( Context, CoinName, TargetCoin ):
 
     ## Get the balance of the coin
     Saldo = GetBalance( Context, CoinName)
-    log.Output (CoinName , end = " " )
-    log.Output ("Balance %.8f" % Saldo)
+    PrintBalance(Context, CoinName )
 
     ## Caculate what to buy
     AmountToBuy = Saldo / Price
@@ -445,8 +444,8 @@ def TradeCoin( Context, CoinName, TargetCoin ):
 
     log.Output ("")
     log.Output ("Placed order at %s" % TickerName)
-    log.Output ("     Buy %.8f" % AmountToBuy, end = " ")
-    log.Output ("at %.8f" % Price)
+    log.Output ("   Buy %.8f" % AmountToBuy)
+    log.Output ("   at %.8f" % Price)
     log.Output ("   Total %.8f" % Total)
     log.Output ("   Funds %.8f" % Saldo)
 
