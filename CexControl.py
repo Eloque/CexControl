@@ -186,58 +186,7 @@ def main():
 
     while True:
         try:
-            now = time.asctime( time.localtime(time.time()) )
-
-            log.Output ("")
-            log.Output ("Start cycle at %s" % now)
-
-            CancelOrder(context)
-
-            ##balance = context.balance()
-            GHSBalance = GetBalance(context, 'GHS')
-            log.Output ("GHS balance: %s" % GHSBalance)
-            log.Output ("")
-
-            TargetCoin = GetTargetCoin(context)
-
-            log.Output ("Target Coin set to: %s" % TargetCoin[0])
-            log.Output ("")
-
-            log.Output ( "Efficiency threshold: %s" % settings.EfficiencyThreshold )
-            log.Output ( "Efficiency possible: %0.2f" % TargetCoin[1] )
-
-            if (TargetCoin[1] >= settings.EfficiencyThreshold ):
-                arbitrate = True
-                log.Output ("Arbitration desired, trade coins for target coin")
-            else:
-                arbitrate = False
-                if ( settings.HoldCoins == True ):
-                    log.Output ("Arbitration not desired, hold non target coins this cycle")
-                else:
-                    log.Output ("Arbitration not desired, reinvest all coins this cycle")
-
-            PrintBalance( context, "BTC")
-            PrintBalance( context, "NMC")
-            
-
-            if (TargetCoin[0] == "BTC"):
-                if ( arbitrate ):
-                    ReinvestCoin(context, "NMC", settings.NMCThreshold, TargetCoin[0] )
-                else:
-                    if ( settings.HoldCoins == False ):
-                        ReinvestCoin(context, "NMC", settings.NMCThreshold, "GHS" )
-
-                ReinvestCoin(context, "BTC", settings.BTCThreshold, "GHS" )
-
-            if (TargetCoin[0] == "NMC"):
-                if ( arbitrate ):
-                    ReinvestCoin(context, "BTC", settings.BTCThreshold, TargetCoin[0] )
-                else:
-                    if ( settings.HoldCoins == False ):
-                        ReinvestCoin(context, "BTC", settings.BTCThreshold, "GHS" )
-
-
-                ReinvestCoin(context, "NMC", settings.NMCThreshold, "GHS" )
+            TradeLoop(context, settings)
 
         except urllib2.HTTPError, err:
             log.Output ("HTTPError :%s" % err)
@@ -257,6 +206,62 @@ def main():
             cycle = cycle - 10
 
     pass
+
+## Externalised tradeloop
+def TradeLoop(context, settings):
+    now = time.asctime( time.localtime(time.time()) )
+
+    log.Output ("")
+    log.Output ("Start cycle at %s" % now)
+
+    CancelOrder(context)
+    
+    ##balance = context.balance()
+    GHSBalance = GetBalance(context, 'GHS')
+    log.Output ("GHS balance: %s" % GHSBalance)
+    log.Output ("")
+
+    TargetCoin = GetTargetCoin(context)
+
+    log.Output ("Target Coin set to: %s" % TargetCoin[0])
+    log.Output ("")
+
+    log.Output ( "Efficiency threshold: %s" % settings.EfficiencyThreshold )
+    log.Output ( "Efficiency possible: %0.2f" % TargetCoin[1] )
+
+    if (TargetCoin[1] >= settings.EfficiencyThreshold ):
+        arbitrate = True
+        log.Output ("Arbitration desired, trade coins for target coin")
+    else:
+        arbitrate = False
+        if ( settings.HoldCoins == True ):
+            log.Output ("Arbitration not desired, hold non target coins this cycle")
+        else:
+            log.Output ("Arbitration not desired, reinvest all coins this cycle")
+
+    PrintBalance( context, "BTC")
+    PrintBalance( context, "NMC")
+    
+
+    if (TargetCoin[0] == "BTC"):
+        if ( arbitrate ):
+            ReinvestCoin(context, "NMC", settings.NMCThreshold, TargetCoin[0] )
+        else:
+            if ( settings.HoldCoins == False ):
+                ReinvestCoin(context, "NMC", settings.NMCThreshold, "GHS" )
+
+        ReinvestCoin(context, "BTC", settings.BTCThreshold, "GHS" )
+
+    if (TargetCoin[0] == "NMC"):
+        if ( arbitrate ):
+            ReinvestCoin(context, "BTC", settings.BTCThreshold, TargetCoin[0] )
+        else:
+            if ( settings.HoldCoins == False ):
+                ReinvestCoin(context, "BTC", settings.BTCThreshold, "GHS" )
+
+
+        ReinvestCoin(context, "NMC", settings.NMCThreshold, "GHS" )
+    
 
 ## Convert a unicode based float to a real float for us in calculations
 def ConvertUnicodeFloatToFloat( UnicodeFloat ):
@@ -316,6 +321,8 @@ def CancelOrder(context):
 def GetBalance(Context, CoinName):
 
     balance = ("NULL")
+
+    log.Output("Attempting to retreive balance for %s" % CoinName)
 
     try:
 

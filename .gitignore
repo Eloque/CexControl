@@ -1,5 +1,10 @@
+2to3.py
+PyGTKTest.py
+*.txt
 CexControlSettings.conf
 CexControlSettings.conf.bu
 *.pyc
 __init__.py
 *.log
+TrialThread.py
+cexapi.p3.py
