@@ -28,6 +28,13 @@ version = "0.7.2"
 from Log import Logger
 log = Logger()
 
+class CexControl:
+    
+    def __init__(self):
+        
+        ## Initialize class
+        
+
 class Settings:
 
     def __init__(self):
