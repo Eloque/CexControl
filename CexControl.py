@@ -22,18 +22,18 @@ import sys
 ## just place till P3
 import urllib2
 
-version = "0.7.2"
+version = "0.8.0"
 
 ## Get Loggin obect
 from Log import Logger
 log = Logger()
 
 class CexControl:
-    
+
     def __init__(self):
-        
+
         ## Initialize class
-        
+
 
 class Settings:
 
@@ -222,7 +222,7 @@ def TradeLoop(context, settings):
     log.Output ("Start cycle at %s" % now)
 
     CancelOrder(context)
-    
+
     ##balance = context.balance()
     GHSBalance = GetBalance(context, 'GHS')
     log.Output ("GHS balance: %s" % GHSBalance)
@@ -248,7 +248,7 @@ def TradeLoop(context, settings):
 
     PrintBalance( context, "BTC")
     PrintBalance( context, "NMC")
-    
+
 
     if (TargetCoin[0] == "BTC"):
         if ( arbitrate ):
@@ -268,7 +268,7 @@ def TradeLoop(context, settings):
 
 
         ReinvestCoin(context, "NMC", settings.NMCThreshold, "GHS" )
-    
+
 
 ## Convert a unicode based float to a real float for us in calculations
 def ConvertUnicodeFloatToFloat( UnicodeFloat ):
@@ -522,7 +522,7 @@ def GetTargetCoin(Context):
 
     log.Output ("")
     log.Output ("Buy %s then use that to buy GHS" % coin )
-    
+
 
     return returnvalue
 
