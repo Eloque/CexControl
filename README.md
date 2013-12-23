@@ -1,6 +1,6 @@
 ## CexControl
 ### Description
-CexControl is a simple utility script to manage mining reinvestments on Cex.IO, simply put, it takes the full profit from BTC and NMC minig and automatically uses that to buy more GHS. It has some nice features that calculate prices and try to optimize orders.
+CexControl is a simple utility script to manage mining reinvestments on Cex.IO, simply put, it takes the full profit from BTC and NMC mining and automatically uses that to buy more GHS. It has some nice features that calculate prices and try to optimize orders.
 This is Beta software. Use at your own risk.
 
 ### Installation
@@ -13,9 +13,14 @@ The script will detect if there is a configuration file or not, and prompt for u
 
 To find out what version you are running, run the script on a commandline with the argument parameter, ie, "python ./CexControl.py version"
 
-#### To configre
+
+#### To configure
 To create a new configuration, start with "python ./CexControl.py newconfig", this will delete the existing configuration.
 To just change the thresholds, start with "python ./CexControl.py setthreshold", this will prompt for new thresholds. Please fill in decimals.
+
+The values in the configuration are simple, the treshold is the minimum amount of coins needed before a trade. The effficiency is the rate at which arbitration will take place, holdcoins determines wether to wait for arbitration or to directly invest and reserve is the minumum of coins to hold and not invest at all.
+
+The first time the script runs, it will also ask for configuration. 
 
 ### Features
 The script will run and check every 5 minutes if there are more then 0.0001 BTC or NMC available.
@@ -36,6 +41,9 @@ Vouchers via Cex.IO can of course also be used.
 I will accept and appreciate every and all donations.
 
 ### Version history
+
+#### Version 0.8.4
+- Added reserve function
 
 #### Version 0.7.2
 - Fixed various logging errors

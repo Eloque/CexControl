@@ -22,7 +22,7 @@ import sys
 ## just place till P3
 import urllib2
 
-version = "0.8.0"
+version = "0.8.4"
 
 ## Get Loggin obect
 from Log import Logger
@@ -33,14 +33,24 @@ class CexControl:
     def __init__(self):
 
         ## Initialize class
+        Trading = "GUI"
 
+class Coin:
+    
+    def __init__(self, Name, Threshold, Reserve):
+        
+        self.Name = Name
+        self.Threshold = Threshold
+        self.Reserve = Reserve
+    
 
 class Settings:
-
+    
     def __init__(self):
 
-        self.NMCThreshold = 0.0
-        self.BTCThreshold = 0.0
+        self.BTC = Coin("BTC", 0.00001, 0.00)
+        self.NMC = Coin("NMC", 0.00001, 0.00)
+        
         self.EfficiencyThreshold = 1.0
 
         self.username    = ""
@@ -63,15 +73,26 @@ class Settings:
             self.api_secret  = str(LoadedFromFile['secret'])
 
             try:
-                self.NMCThreshold = float(LoadedFromFile['NMCThreshold'])
+                self.NMC.Threshold = float(LoadedFromFile['NMCThreshold'])
             except:
                 log.Output ("NMC Threshold Setting not present, using default")
-
+                
             try:
-                self.BTCThreshold = float(LoadedFromFile['BTCThreshold'])
+                self.NMC.Reserve = float(LoadedFromFile['NMCReserve'])
+            except:
+                log.Output ("NMC Reserve Setting not present, using default")
+                
+            try:
+                self.BTC.Threshold = float(LoadedFromFile['BTCThreshold'])
             except:
                 log.Output ("BTC Threshold Setting not present, using default")
 
+            try:
+                self.BTC.Reserve = float(LoadedFromFile['BTCReserve'])
+            except:
+                log.Output ("BTC Reserve Setting not present, using default")
+
+                
             try:
                 self.EfficiencyThreshold = float(LoadedFromFile['EfficiencyThreshold'])
             except:
@@ -90,7 +111,8 @@ class Settings:
             self.CreateSettings()
             self.LoadSettings()
 
-        ## sself.WriteSettings()
+        ## Dunno, if I should...        
+        self.WriteSettings()
 
     def CreateSettings(self):
 
@@ -110,8 +132,10 @@ class Settings:
         ToFile = { "username"               :str(self.username),
                    "key"                    :str(self.api_key),
                    "secret"                 :str(self.api_secret),
-                   "BTCThreshold"           :str(self.BTCThreshold),
-                   "NMCThreshold"           :str(self.NMCThreshold),
+                   "BTCThreshold"           :str(self.BTC.Threshold),
+                   "BTCReserve"             :str(self.BTC.Reserve),
+                   "NMCThreshold"           :str(self.NMC.Threshold),
+                   "NMCReserve"             :str(self.NMC.Reserve),
                    "EfficiencyThreshold"    :str(self.EfficiencyThreshold),
                    "HoldCoins"              :bool(self.HoldCoins),
                  }
@@ -131,8 +155,10 @@ class Settings:
         log.Output ("")
         log.Output ("Please enter your thresholds")
         log.Output ("")
-        self.BTCThreshold   = raw_input("Threshold to trade BTC: ")
-        self.NMCThreshold   = raw_input("Threshold to trade NMC: ")
+        self.BTC.Threshold = raw_input("Threshold to trade BTC: ")
+        self.BTC.Reserve   = raw_input("Reserve for BTC: ")
+        self.NMC.Threshold = raw_input("Threshold to trade NMC: ")
+        self.NMC.Reserve   = raw_input("Reserve for NMC: ")
         self.EfficiencyThreshold   = raw_input("Efficiency at which to arbitrate: ")
         self.HoldCoins = raw_input("Hold Coins at low efficiency (Yes/No): ")
 
@@ -169,8 +195,10 @@ def main():
 
         log.Output ("========================================")
 
-        log.Output ("BTC Threshold: %0.8f" % settings.BTCThreshold)
-        log.Output ("NMC Threshold: %0.8f" % settings.NMCThreshold)
+        log.Output ("BTC Threshold: %0.8f" % settings.BTC.Threshold)
+        log.Output ("BTC Reserve  : %0.8f" % settings.BTC.Reserve)
+        log.Output ("NMC Threshold: %0.8f" % settings.NMC.Threshold)
+        log.Output ("NMC Reserve  : %0.8f" % settings.NMC.Reserve)
         log.Output ("Efficiency Threshold: %s" % settings.EfficiencyThreshold)
         log.Output ("Hold coins below efficiency threshold: %s" % settings.HoldCoins)
 
@@ -249,25 +277,26 @@ def TradeLoop(context, settings):
     PrintBalance( context, "BTC")
     PrintBalance( context, "NMC")
 
-
     if (TargetCoin[0] == "BTC"):
         if ( arbitrate ):
-            ReinvestCoin(context, "NMC", settings.NMCThreshold, TargetCoin[0] )
+            ## We will assume that on arbitrate, we also respect the Reserve            
+            ReinvestCoinByClass(context, settings.NMC, TargetCoin[0] )
+            
         else:
-            if ( settings.HoldCoins == False ):
-                ReinvestCoin(context, "NMC", settings.NMCThreshold, "GHS" )
+            if ( settings.HoldCoins == False ):                
+                ReinvestCoinByClass(context, settings.NMC, TargetCoin[0] )
 
-        ReinvestCoin(context, "BTC", settings.BTCThreshold, "GHS" )
+        ReinvestCoinByClass(context, settings.BTC, "GHS" )
 
     if (TargetCoin[0] == "NMC"):
         if ( arbitrate ):
-            ReinvestCoin(context, "BTC", settings.BTCThreshold, TargetCoin[0] )
+            ## We will assume that on arbitrate, we also respect the Reserve
+            ReinvestCoinByClass(context, settings.BTC, TargetCoin[0] )
         else:
-            if ( settings.HoldCoins == False ):
-                ReinvestCoin(context, "BTC", settings.BTCThreshold, "GHS" )
+            if ( settings.HoldCoins == False ):                
+                ReinvestCoinByClass(context, settings.BTC, "GHS" )
 
-
-        ReinvestCoin(context, "NMC", settings.NMCThreshold, "GHS" )
+        ReinvestCoinByClass(context, settings.MNC, "GHS" )
 
 
 ## Convert a unicode based float to a real float for us in calculations
@@ -329,7 +358,7 @@ def GetBalance(Context, CoinName):
 
     balance = ("NULL")
 
-    log.Output("Attempting to retreive balance for %s" % CoinName)
+    ## log.Output("Attempting to retreive balance for %s" % CoinName)
 
     try:
 
@@ -403,18 +432,32 @@ def PrintBalance( Context, CoinName):
     log.Output ( message )
 
 
+## Holder Class, to reinvest Coin by class
+def ReinvestCoinByClass(Context, Coin, TargetCoin ):
+        
+    CoinName   = Coin.Name
+    Threshold  = Coin.Threshold
+    TargetCoin = TargetCoin 
+
+    Saldo = GetBalance(Context, CoinName)
+    InvestableSaldo = Saldo - Coin.Reserve
+    
+    if ( InvestableSaldo > Threshold ):
+        TradeCoin( Context, CoinName, TargetCoin, InvestableSaldo )
+
+    
 ## Reinvest a coin
 def ReinvestCoin(Context, CoinName, Threshold, TargetCoin ):
 
-    Saldo = GetBalance(Context, CoinName)
+    log.Output("Old function used, please issue a bug report, mention ReinvestCoin used")
 
-    if ( Saldo > Threshold ):
-
-        TradeCoin( Context, CoinName, TargetCoin )
+##    Saldo = GetBalance(Context, CoinName)
+##    if ( Saldo > Threshold ):
+##        TradeCoin( Context, CoinName, TargetCoin )
 
 
 ## Trade one coin for another
-def TradeCoin( Context, CoinName, TargetCoin ):
+def TradeCoin( Context, CoinName, TargetCoin, Amount ):
 
     ## Get the Price of the TargetCoin
     Price = GetPriceByCoin( Context, CoinName, TargetCoin )
@@ -422,8 +465,9 @@ def TradeCoin( Context, CoinName, TargetCoin ):
     log.Output ("----------------------------------------")
 
     ## Get the balance of the coin
-    Saldo = GetBalance( Context, CoinName)
-    PrintBalance(Context, CoinName )
+    TotalBalance = GetBalance(Context, CoinName)
+    ## Calculate the reserve, if any, we already have the amount
+    Saldo = Amount
 
     ## Caculate what to buy
     AmountToBuy = Saldo / Price
@@ -461,7 +505,7 @@ def TradeCoin( Context, CoinName, TargetCoin ):
     log.Output ("   Buy %.8f" % AmountToBuy)
     log.Output ("   at %.8f" % Price)
     log.Output ("   Total %.8f" % Total)
-    log.Output ("   Funds %.8f" % Saldo)
+    log.Output ("   Funds %.8f" % TotalBalance)
 
     try:
         OrderID = result['id']
