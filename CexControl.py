@@ -22,7 +22,7 @@ import sys
 ## just place till P3
 import urllib2
 
-version = "0.8.4"
+version = "0.8.5"
 
 ## Get Loggin obect
 from Log import Logger
@@ -296,7 +296,7 @@ def TradeLoop(context, settings):
             if ( settings.HoldCoins == False ):                
                 ReinvestCoinByClass(context, settings.BTC, "GHS" )
 
-        ReinvestCoinByClass(context, settings.MNC, "GHS" )
+        ReinvestCoinByClass(context, settings.NMC, "GHS" )
 
 
 ## Convert a unicode based float to a real float for us in calculations
