@@ -39,6 +39,7 @@ class Logger:
             timestring = strftime("%Y-%m-%d %H:%M:%S", time.gmtime() )
             LogLine = str( timestring + " " + Message + "\n" )
             self.LogText.insert(END, LogLine)
+            self.LogText.see(END)
 
         if self.ToFile == True:
             self.LogFile.write( str(int(time.time() ) ) )
