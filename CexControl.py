@@ -485,11 +485,10 @@ def TradeCoin( Context, CoinName, TargetCoin, Amount ):
 
         log.Output ("")
         log.Output ("To buy adjusted to : %.8f" % AmountToBuy)
-        Total = AmountToBuy * Price
         
-    ## Hack to adjust for 2% fee
-    Total = Total * 0.98
-
+        ## Hack to adjust for 2% fee
+        Total = AmountToBuy * Price * 1.02
+        
     TickerName = GetTickerName( CoinName, TargetCoin )
 
     ## Hack, to differentiate between buy and sell
