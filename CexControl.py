@@ -22,7 +22,7 @@ import sys
 ## just place till P3
 import urllib2
 
-version = "0.8.5"
+version = "0.8.6"
 
 ## Get Loggin obect
 from Log import Logger
@@ -486,6 +486,9 @@ def TradeCoin( Context, CoinName, TargetCoin, Amount ):
         log.Output ("")
         log.Output ("To buy adjusted to : %.8f" % AmountToBuy)
         Total = AmountToBuy * Price
+        
+    ## Hack to adjust for 2% fee
+    Total = Total * 0.98
 
     TickerName = GetTickerName( CoinName, TargetCoin )
 
