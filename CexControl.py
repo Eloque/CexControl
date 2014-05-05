@@ -475,8 +475,8 @@ def TradeCoin( Context, CoinName, TargetCoin, Amount ):
 
     log.Output ("Amount to buy %.08f" % AmountToBuy)
 
-    ## This is an HACK
-    Total = AmountToBuy * Price
+    ## This is an HACK   
+    Total = AmountToBuy * Price * 1.02
 
     ## Adjusted to compensate for floating math conversion
     while ( Total > Saldo ):
