@@ -290,7 +290,7 @@ def TradeLoop(context, settings):
 
         else:
             if ( settings.HoldCoins == False ):
-                ReinvestCoinByClass(context, settings.NMC, TargetCoin[0] )
+                ReinvestCoinByClass(context, settings.NMC, "GHS")
 
         ReinvestCoinByClass(context, settings.BTC, "GHS" )
 
