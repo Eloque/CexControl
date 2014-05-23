@@ -22,11 +22,12 @@ import sys
 ## just place till P3
 import urllib2
 
-version = "0.8.6"
+version = "0.8.7"
 
 ## Get Loggin obect
 from Log import Logger
 log = Logger()
+settings = []
 
 class CexControl:
 
@@ -58,6 +59,7 @@ class Settings:
         self.api_secret  = ""
 
         self.HoldCoins = False
+        self.Trial = False
 
     def LoadSettings(self):
 
@@ -179,6 +181,7 @@ def main():
     log.Output ("======= CexControl version %s =======" % version)
 
     ## First, try to get the configuration settings in the settings object
+    global settings
     settings = Settings()
     settings.LoadSettings()
 
@@ -201,6 +204,9 @@ def main():
         log.Output ("NMC Reserve  : %0.8f" % settings.NMC.Reserve)
         log.Output ("Efficiency Threshold: %s" % settings.EfficiencyThreshold)
         log.Output ("Hold coins below efficiency threshold: %s" % settings.HoldCoins)
+
+        if settings.Trial == True:
+            log.Output( " God damn trial mode ")
 
     except:
         log.Output ("== !! ============================ !! ==")
@@ -420,6 +426,12 @@ def ParseArguments(settings):
             if argument == "version":
                 log.Output ("Version: %s" % version )
                 exit()
+                
+            if argument == "trial":
+                log.Output ("trial:")
+                log.Output ("  Trial mode, do not execute any real actions")
+                settings.Trial = True
+                
 
 ## log.Output the balance of a Coin
 def PrintBalance( Context, CoinName):
@@ -458,6 +470,7 @@ def ReinvestCoin(Context, CoinName, Threshold, TargetCoin ):
 
 ## Trade one coin for another
 def TradeCoin( Context, CoinName, TargetCoin, Amount ):
+    global settings
 
     ## Get the Price of the TargetCoin
     Price = GetPriceByCoin( Context, CoinName, TargetCoin )
@@ -500,7 +513,11 @@ def TradeCoin( Context, CoinName, TargetCoin, Amount ):
     else:
         action = 'buy'
 
-    result = Context.place_order(action, AmountToBuy, Price, TickerName )
+    if settings.Trial == False:
+        result = Context.place_order(action, AmountToBuy, Price, TickerName )
+    else:
+        log.Output ("No real trade, trial mode")
+   
 
     log.Output ("")
     log.Output ("Placed order at %s" % TickerName)
@@ -510,8 +527,10 @@ def TradeCoin( Context, CoinName, TargetCoin, Amount ):
     log.Output ("   Funds %.8f" % TotalBalance)
 
     try:
-        OrderID = result['id']
-        log.Output ("Order ID %s" % OrderID)
+        if settings.Trial == False:
+            OrderID = result['id']
+            log.Output ("Order ID %s" % OrderID)
+
     except:
         log.Output (result)
         log.Output (AmountToBuy)
