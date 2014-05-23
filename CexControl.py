@@ -205,9 +205,6 @@ def main():
         log.Output ("Efficiency Threshold: %s" % settings.EfficiencyThreshold)
         log.Output ("Hold coins below efficiency threshold: %s" % settings.HoldCoins)
 
-        if settings.Trial == True:
-            log.Output( " God damn trial mode ")
-
     except:
         log.Output ("== !! ============================ !! ==")
         log.Output ("Error:")
@@ -453,6 +450,7 @@ def ReinvestCoinByClass(Context, Coin, TargetCoin ):
 
     Saldo = GetBalance(Context, CoinName)
     InvestableSaldo = Saldo - Coin.Reserve
+
 
     if ( InvestableSaldo > Threshold ):
         TradeCoin( Context, CoinName, TargetCoin, InvestableSaldo )
