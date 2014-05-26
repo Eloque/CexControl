@@ -8,7 +8,8 @@ Put all the files in a user writeable directory.
 
 ### User guide
 #### To start
-Run the script on a commandline, ie, "python ./CexControl.py"
+Run the script on a commandline, ie, "python ./CexControl.py".
+Run the script on a commandline with trial flag to run in trial mode, ie, "python ./CexControl.py trial", no real trades will be performed.
 The script will detect if there is a configuration file or not, and prompt for user input if not.
 
 To find out what version you are running, run the script on a commandline with the argument parameter, ie, "python ./CexControl.py version"
@@ -16,6 +17,7 @@ To find out what version you are running, run the script on a commandline with t
 #### To configre
 To create a new configuration, start with "python ./CexControl.py newconfig", this will delete the existing configuration.
 To just change the thresholds, start with "python ./CexControl.py setthreshold", this will prompt for new thresholds. Please fill in decimals.
+
 
 ### Features
 The script will run and check every 5 minutes if there are more then 0.0001 BTC or NMC available.
@@ -36,6 +38,11 @@ Vouchers via Cex.IO can of course also be used.
 I will accept and appreciate every and all donations.
 
 ### Version history
+
+#### Version 0.9.0
+- Adjusted for 2% fee on trade to more suitable calculation
+- Fixed bug with NMC trading not working
+- Added Trial mode
 
 #### Version 0.8.6
 - Adjusted for 2% fee on trade

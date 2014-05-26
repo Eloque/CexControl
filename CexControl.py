@@ -22,7 +22,7 @@ import sys
 ## just place till P3
 import urllib2
 
-version = "0.8.7"
+version = "0.9.0"
 
 ## Get Loggin obect
 from Log import Logger
@@ -477,17 +477,25 @@ def TradeCoin( Context, CoinName, TargetCoin, Amount ):
 
     ## Get the balance of the coin
     TotalBalance = GetBalance(Context, CoinName)
+
     ## Calculate the reserve, if any, we already have the amount
     Saldo = Amount
 
+    ## Adjust Saldo, take out 2 percent, for trade fee
+    Saldo = Saldo
+
+    ## The hack we are using right now is going to be to add 2 percent to the PRICE of the 
+    ## targetcoin, 
+    FeePrice = Price * 1.02
+
     ## Caculate what to buy
-    AmountToBuy = Saldo / Price
+    AmountToBuy = Saldo / FeePrice
     AmountToBuy = round(AmountToBuy-0.000005,6)
 
     log.Output ("Amount to buy %.08f" % AmountToBuy)
 
-    ## This is an HACK   
-    Total = AmountToBuy * Price * 1.02
+    ## Calculate the total amount
+    Total = AmountToBuy * FeePrice
 
     ## Adjusted to compensate for floating math conversion
     while ( Total > Saldo ):
@@ -498,7 +506,7 @@ def TradeCoin( Context, CoinName, TargetCoin, Amount ):
         log.Output ("To buy adjusted to : %.8f" % AmountToBuy)
         
         ## Hack to adjust for 2% fee
-        Total = AmountToBuy * Price * 1.02
+        Total = AmountToBuy * FeePrice
         
     TickerName = GetTickerName( CoinName, TargetCoin )
 
