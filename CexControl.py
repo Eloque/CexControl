@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Name:       CexControl
 # Purpose:    Automatically add mined coins on Cex.IO to GHS pool
 #
@@ -22,7 +22,7 @@ import sys
 ## just place till P3
 import urllib2
 
-version = "0.9.0"
+version = "0.9.1"
 
 ## Get Loggin obect
 from Log import Logger
@@ -50,7 +50,8 @@ class Settings:
     def __init__(self):
 
         self.BTC = Coin("BTC", 0.00001, 0.00)
-        self.NMC = Coin("NMC", 0.00001, 0.00)
+        self.NMC = Coin("NMC", 0.00010, 0.00)
+        self.IXC = Coin("IXC", 0.10000, 0.00)
 
         self.EfficiencyThreshold = 1.0
 
@@ -105,6 +106,17 @@ class Settings:
             except:
                 log.Output ("Hold Coins Setting not present, using default")
 
+
+            try:
+                self.IXC.Threshold = float(LoadedFromFile['IXCThreshold'])
+            except:
+                log.Output ("IXC Threshold Setting not present, using default")
+
+            try:
+                self.NMC.Reserve = float(LoadedFromFile['IXCReserve'])
+            except:
+                log.Output ("IXC Reserve Setting not present, using default")
+
             if ( LoadedFromFile ):
                 log.Output ("File found, loaded")
 
@@ -138,6 +150,8 @@ class Settings:
                    "BTCReserve"             :str(self.BTC.Reserve),
                    "NMCThreshold"           :str(self.NMC.Threshold),
                    "NMCReserve"             :str(self.NMC.Reserve),
+                   "IXCThreshold"           :str(self.IXC.Threshold),
+                   "IXCReserve"             :str(self.IXC.Reserve),
                    "EfficiencyThreshold"    :str(self.EfficiencyThreshold),
                    "HoldCoins"              :bool(self.HoldCoins),
                  }
@@ -157,10 +171,16 @@ class Settings:
         log.Output ("")
         log.Output ("Please enter your thresholds")
         log.Output ("")
+
         self.BTC.Threshold = raw_input("Threshold to trade BTC: ")
         self.BTC.Reserve   = raw_input("Reserve for BTC: ")
+
         self.NMC.Threshold = raw_input("Threshold to trade NMC: ")
         self.NMC.Reserve   = raw_input("Reserve for NMC: ")
+
+        self.IXC.Threshold = raw_input("Threshold to trade IXC: ")
+        self.IXC.Reserve   = raw_input("Reserve for IXC: ")
+
         self.EfficiencyThreshold   = raw_input("Efficiency at which to arbitrate: ")
         self.HoldCoins = raw_input("Hold Coins at low efficiency (Yes/No): ")
 
@@ -200,8 +220,13 @@ def main():
 
         log.Output ("BTC Threshold: %0.8f" % settings.BTC.Threshold)
         log.Output ("BTC Reserve  : %0.8f" % settings.BTC.Reserve)
+
         log.Output ("NMC Threshold: %0.8f" % settings.NMC.Threshold)
         log.Output ("NMC Reserve  : %0.8f" % settings.NMC.Reserve)
+
+        log.Output ("IXC Threshold: %0.8f" % settings.IXC.Threshold)
+        log.Output ("IXC Reserve  : %0.8f" % settings.IXC.Reserve)
+
         log.Output ("Efficiency Threshold: %s" % settings.EfficiencyThreshold)
         log.Output ("Hold coins below efficiency threshold: %s" % settings.HoldCoins)
 
@@ -279,7 +304,12 @@ def TradeLoop(context, settings):
 
     PrintBalance( context, "BTC")
     PrintBalance( context, "NMC")
+    PrintBalance( context, "IXC")
 
+    ## Trade in IXC
+    ReinvestCoinByClass(context, settings.IXC, "BTC")
+
+    ## Trade for BTC
     if (TargetCoin[0] == "BTC"):
         if ( arbitrate ):
             ## We will assume that on arbitrate, we also respect the Reserve
@@ -291,6 +321,7 @@ def TradeLoop(context, settings):
 
         ReinvestCoinByClass(context, settings.BTC, "GHS" )
 
+    ## Trade for NMC
     if (TargetCoin[0] == "NMC"):
         if ( arbitrate ):
             ## We will assume that on arbitrate, we also respect the Reserve
@@ -423,12 +454,12 @@ def ParseArguments(settings):
             if argument == "version":
                 log.Output ("Version: %s" % version )
                 exit()
-                
+
             if argument == "trial":
                 log.Output ("trial:")
                 log.Output ("  Trial mode, do not execute any real actions")
                 settings.Trial = True
-                
+
 
 ## log.Output the balance of a Coin
 def PrintBalance( Context, CoinName):
@@ -474,6 +505,7 @@ def TradeCoin( Context, CoinName, TargetCoin, Amount ):
     Price = GetPriceByCoin( Context, CoinName, TargetCoin )
 
     log.Output ("----------------------------------------")
+    log.Output ( CoinName + " for " + TargetCoin )
 
     ## Get the balance of the coin
     TotalBalance = GetBalance(Context, CoinName)
@@ -481,18 +513,13 @@ def TradeCoin( Context, CoinName, TargetCoin, Amount ):
     ## Calculate the reserve, if any, we already have the amount
     Saldo = Amount
 
-    ## Adjust Saldo, take out 2 percent, for trade fee
-    Saldo = Saldo
-
-    ## The hack we are using right now is going to be to add 2 percent to the PRICE of the 
-    ## targetcoin, 
+    ## The hack we are using right now is going to be to add 2 percent to the PRICE of the
+    ## targetcoin,
     FeePrice = Price * 1.02
 
     ## Caculate what to buy
     AmountToBuy = Saldo / FeePrice
     AmountToBuy = round(AmountToBuy-0.000005,6)
-
-    log.Output ("Amount to buy %.08f" % AmountToBuy)
 
     ## Calculate the total amount
     Total = AmountToBuy * FeePrice
@@ -504,33 +531,54 @@ def TradeCoin( Context, CoinName, TargetCoin, Amount ):
 
         log.Output ("")
         log.Output ("To buy adjusted to : %.8f" % AmountToBuy)
-        
+
         ## Hack to adjust for 2% fee
         Total = AmountToBuy * FeePrice
-        
+
     TickerName = GetTickerName( CoinName, TargetCoin )
 
     ## Hack, to differentiate between buy and sell
     action = ''
+    Gain = 0.0
     if TargetCoin == "BTC":
         action = 'sell'
         AmountToBuy = Saldo ## sell the complete balance!
-        log.Output ("To sell adjusted to : %.8f NMC" % AmountToBuy)
+        log.Output ("Amount to sell %.08f" % AmountToBuy)
+
+        ## I am selling my Coin, for FeePrice BTC per Coin
+        ## So, I get AmounToBuy / FeePrice BTC
+        Gain = AmountToBuy * FeePrice
+
     else:
         action = 'buy'
+        log.Output ("Amount to buy %.08f" % AmountToBuy)
+
+        ## I am buying Coin, for FeePrice per Coin
+        ## So, I get AmounToBuy
+        Gain = AmountToBuy
 
     if settings.Trial == False:
         result = Context.place_order(action, AmountToBuy, Price, TickerName )
     else:
         log.Output ("No real trade, trial mode")
-   
+
 
     log.Output ("")
     log.Output ("Placed order at %s" % TickerName)
-    log.Output ("   Buy %.8f" % AmountToBuy)
+
+    if TargetCoin == "BTC":
+        log.Output ("   Sell %.8f" % AmountToBuy)
+    else:
+        log.Output ("   Buy %.8f" % AmountToBuy)
+
     log.Output ("   at %.8f" % Price)
     log.Output ("   Total %.8f" % Total)
     log.Output ("   Funds %.8f" % TotalBalance)
+
+    log.Output ("")
+    string = "   Gain %.8f " % Gain
+    string = string + TargetCoin
+    log.Output ( string )
 
     try:
         if settings.Trial == False:
@@ -620,6 +668,9 @@ def GetTickerName( CoinName, TargetCoin ):
             Ticker = "GHS/BTC"
         if TargetCoin == "NMC" :
             Ticker = "NMC/BTC"
+
+    if CoinName == "IXC" :
+        Ticker = "IXC/BTC"
 
     return Ticker
 
