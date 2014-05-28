@@ -39,6 +39,9 @@ I will accept and appreciate every and all donations.
 
 ### Version history
 
+#### Version 0.9.1
+- Added IXC Trading
+
 #### Version 0.9.0
 - Adjusted for 2% fee on trade to more suitable calculation
 - Fixed bug with NMC trading not working
