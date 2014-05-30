@@ -22,7 +22,7 @@ import sys
 ## just place till P3
 import urllib2
 
-version = "0.9.1"
+version = "0.9.2"
 
 ## Get Loggin obect
 from Log import Logger
@@ -52,6 +52,7 @@ class Settings:
         self.BTC = Coin("BTC", 0.00001, 0.00)
         self.NMC = Coin("NMC", 0.00010, 0.00)
         self.IXC = Coin("IXC", 0.10000, 0.00)
+        self.LTC = Coin("LTC", 0.10000, 0.00)
 
         self.EfficiencyThreshold = 1.0
 
@@ -113,9 +114,22 @@ class Settings:
                 log.Output ("IXC Threshold Setting not present, using default")
 
             try:
-                self.NMC.Reserve = float(LoadedFromFile['IXCReserve'])
+                self.IXC.Reserve = float(LoadedFromFile['IXCReserve'])
             except:
                 log.Output ("IXC Reserve Setting not present, using default")
+
+            if ( LoadedFromFile ):
+                log.Output ("File found, loaded")
+
+            try:
+                self.LTC.Threshold = float(LoadedFromFile['LTCThreshold'])
+            except:
+                log.Output ("LTC Threshold Setting not present, using default")
+
+            try:
+                self.LTC.Reserve = float(LoadedFromFile['LTCReserve'])
+            except:
+                log.Output ("LTC Reserve Setting not present, using default")
 
             if ( LoadedFromFile ):
                 log.Output ("File found, loaded")
@@ -152,6 +166,8 @@ class Settings:
                    "NMCReserve"             :str(self.NMC.Reserve),
                    "IXCThreshold"           :str(self.IXC.Threshold),
                    "IXCReserve"             :str(self.IXC.Reserve),
+                   "LTCThreshold"           :str(self.LTC.Threshold),
+                   "LTCReserve"             :str(self.LTC.Reserve),
                    "EfficiencyThreshold"    :str(self.EfficiencyThreshold),
                    "HoldCoins"              :bool(self.HoldCoins),
                  }
@@ -180,6 +196,9 @@ class Settings:
 
         self.IXC.Threshold = raw_input("Threshold to trade IXC: ")
         self.IXC.Reserve   = raw_input("Reserve for IXC: ")
+
+        self.LTC.Threshold = raw_input("Threshold to trade LTC: ")
+        self.LTC.Reserve   = raw_input("Reserve for LTC: ")
 
         self.EfficiencyThreshold   = raw_input("Efficiency at which to arbitrate: ")
         self.HoldCoins = raw_input("Hold Coins at low efficiency (Yes/No): ")
@@ -226,6 +245,9 @@ def main():
 
         log.Output ("IXC Threshold: %0.8f" % settings.IXC.Threshold)
         log.Output ("IXC Reserve  : %0.8f" % settings.IXC.Reserve)
+
+        log.Output ("LTC Threshold: %0.8f" % settings.IXC.Threshold)
+        log.Output ("LTC Reserve  : %0.8f" % settings.IXC.Reserve)
 
         log.Output ("Efficiency Threshold: %s" % settings.EfficiencyThreshold)
         log.Output ("Hold coins below efficiency threshold: %s" % settings.HoldCoins)
@@ -305,9 +327,13 @@ def TradeLoop(context, settings):
     PrintBalance( context, "BTC")
     PrintBalance( context, "NMC")
     PrintBalance( context, "IXC")
+    PrintBalance( context, "LTC")
 
     ## Trade in IXC
     ReinvestCoinByClass(context, settings.IXC, "BTC")
+
+    ## Trade in LTC
+    ReinvestCoinByClass(context, settings.LTC, "BTC")
 
     ## Trade for BTC
     if (TargetCoin[0] == "BTC"):
@@ -402,7 +428,7 @@ def GetBalance(Context, CoinName):
         Saldo = ConvertUnicodeFloatToFloat(Coin["available"])
 
     except:
-        log.Output (balance)
+        ## log.Output (balance)
         Saldo = 0
 
     return Saldo
@@ -671,6 +697,9 @@ def GetTickerName( CoinName, TargetCoin ):
 
     if CoinName == "IXC" :
         Ticker = "IXC/BTC"
+
+    if CoinName == "LTC" :
+        Ticker = "LTC/BTC"
 
     return Ticker
 
