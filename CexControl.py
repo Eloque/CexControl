@@ -22,7 +22,7 @@ import sys
 ## just place till P3
 import urllib2
 
-version = "0.9.2"
+version = "0.9.3"
 
 ## Get Loggin obect
 from Log import Logger
@@ -246,8 +246,8 @@ def main():
         log.Output ("IXC Threshold: %0.8f" % settings.IXC.Threshold)
         log.Output ("IXC Reserve  : %0.8f" % settings.IXC.Reserve)
 
-        log.Output ("LTC Threshold: %0.8f" % settings.IXC.Threshold)
-        log.Output ("LTC Reserve  : %0.8f" % settings.IXC.Reserve)
+        log.Output ("LTC Threshold: %0.8f" % settings.LTC.Threshold)
+        log.Output ("LTC Reserve  : %0.8f" % settings.LTC.Reserve)
 
         log.Output ("Efficiency Threshold: %s" % settings.EfficiencyThreshold)
         log.Output ("Hold coins below efficiency threshold: %s" % settings.HoldCoins)
