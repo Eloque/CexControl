@@ -22,7 +22,7 @@ import sys
 ## just place till P3
 import urllib2
 
-version = "0.9.3"
+version = "0.9.4"
 
 ## Get Loggin obect
 from Log import Logger
@@ -410,6 +410,15 @@ def CancelOrder(context):
         try:
             context.cancel_order(item['id'])
             log.Output ("BTC/NMC Order %s canceled" % item['id'])
+        except:
+            log.Output ("Cancel order failed")
+
+    ## IXC Order cancel
+    order = context.current_orders("IXC/BTC")
+    for item in order:
+        try:
+            context.cancel_order(item['id'])
+            log.Output ("IXC/BTC Order %s canceled" % item['id'])
         except:
             log.Output ("Cancel order failed")
 
