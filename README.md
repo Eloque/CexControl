@@ -39,6 +39,9 @@ I will accept and appreciate every and all donations.
 
 ### Version history
 
+#### Version 0.9.2
+- Added LTC Trading
+
 #### Version 0.9.1
 - Added IXC Trading
 
