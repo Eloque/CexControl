@@ -556,9 +556,9 @@ def TradeCoin( Context, CoinName, TargetCoin, Amount ):
     log.Output ( "Price               : %.8f" % Price )
     
     ## Adjust price, claim the 1 percent!
-    Price = Price * 0.999
-    Price = round(Price,8)
-    log.Output ( "Claim the 1 percent!: %.8f" % Price )
+#    Price = Price * 0.999
+#    Price = round(Price,8)
+#    log.Output ( "Claim the 1 percent!: %.8f" % Price )
     
     ## Get the balance of the coin
     TotalBalance = GetBalance(Context, CoinName)
