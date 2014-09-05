@@ -67,7 +67,7 @@ class api:
   return self.api_call('ticker', {}, 0, couple)
 
  def order_book(self, couple = 'GHS/BTC'):
-  return self.api_call('order_book', {}, 0, couple)
+  return self.api_call('order_book', {"depth" : str(10)}, 0, couple)
 
  def trade_history(self, since = 1, couple = 'GHS/BTC'):
   return self.api_call('trade_history',{"since" : str(since)}, 0, couple)
