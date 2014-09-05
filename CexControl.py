@@ -22,7 +22,7 @@ import sys
 ## just place till P3
 import urllib2
 
-version = "0.9.4"
+version = "0.9.5"
 
 ## Get Loggin obect
 from Log import Logger
@@ -306,57 +306,65 @@ def TradeLoop(context, settings):
     log.Output ("GHS balance: %s" % GHSBalance)
     log.Output ("")
 
-    TargetCoin = GetTargetCoin(context)
+    # Not longer needed, targetcoin is Always BTC, arbitrage no longer done
+    #TargetCoin = GetTargetCoin(context)
 
-    log.Output ("Target Coin set to: %s" % TargetCoin[0])
-    log.Output ("")
+    #log.Output ("Target Coin set to: %s" % TargetCoin[0])
+    #log.Output ("")
 
-    log.Output ( "Efficiency threshold: %s" % settings.EfficiencyThreshold )
-    log.Output ( "Efficiency possible: %0.2f" % TargetCoin[1] )
+    #log.Output ( "Efficiency threshold: %s" % settings.EfficiencyThreshold )
+    #log.Output ( "Efficiency possible: %0.2f" % TargetCoin[1] )
 
-    if (TargetCoin[1] >= settings.EfficiencyThreshold ):
-        arbitrate = True
-        log.Output ("Arbitration desired, trade coins for target coin")
-    else:
-        arbitrate = False
-        if ( settings.HoldCoins == True ):
-            log.Output ("Arbitration not desired, hold non target coins this cycle")
-        else:
-            log.Output ("Arbitration not desired, reinvest all coins this cycle")
+    #if (TargetCoin[1] >= settings.EfficiencyThreshold ):
+    #    arbitrate = True
+    #    log.Output ("Arbitration desired, trade coins for target coin")
+    #else:
+    #    arbitrate = False
+    #    if ( settings.HoldCoins == True ):
+    #        log.Output ("Arbitration not desired, hold non target coins this cycle")
+    #    else:
+    #        log.Output ("Arbitration not desired, reinvest all coins this cycle")
 
     PrintBalance( context, "BTC")
     PrintBalance( context, "NMC")
     PrintBalance( context, "IXC")
     PrintBalance( context, "LTC")
 
-    ## Trade in IXC
+    ## Trade in IXC for BTC
     ReinvestCoinByClass(context, settings.IXC, "BTC")
 
-    ## Trade in LTC
+    ## Trade in LTC for BTC
     ReinvestCoinByClass(context, settings.LTC, "BTC")
+    
+    ## Trade in NMC for BTC
+    ReinvestCoinByClass(context, settings.NMC, "BTC")    
+    
+    ## Trade BTC for GHS
+    ReinvestCoinByClass(context, settings.BTC, "GHS" )
 
     ## Trade for BTC
-    if (TargetCoin[0] == "BTC"):
-        if ( arbitrate ):
-            ## We will assume that on arbitrate, we also respect the Reserve
-            ReinvestCoinByClass(context, settings.NMC, TargetCoin[0] )
+    ## This is no longer needed, as GHS are always traded for BTC
+    #if (TargetCoin[0] == "BTC"):
+    #    if ( arbitrate ):
+    #        ## We will assume that on arbitrate, we also respect the Reserve
+    #        ReinvestCoinByClass(context, settings.NMC, TargetCoin[0] )
 
-        else:
-            if ( settings.HoldCoins == False ):
-                ReinvestCoinByClass(context, settings.NMC, "GHS")
+    #    else:
+    #        if ( settings.HoldCoins == False ):
+    #            ReinvestCoinByClass(context, settings.NMC, "GHS")
 
-        ReinvestCoinByClass(context, settings.BTC, "GHS" )
+    #    ReinvestCoinByClass(context, settings.BTC, "GHS" )
 
     ## Trade for NMC
-    if (TargetCoin[0] == "NMC"):
-        if ( arbitrate ):
-            ## We will assume that on arbitrate, we also respect the Reserve
-            ReinvestCoinByClass(context, settings.BTC, TargetCoin[0] )
-        else:
-            if ( settings.HoldCoins == False ):
-                ReinvestCoinByClass(context, settings.BTC, "GHS" )
+    #if (TargetCoin[0] == "NMC"):
+    #    if ( arbitrate ):
+    #        ## We will assume that on arbitrate, we also respect the Reserve
+    #        ReinvestCoinByClass(context, settings.BTC, TargetCoin[0] )
+    #    else:
+    #        if ( settings.HoldCoins == False ):
+    #            ReinvestCoinByClass(context, settings.BTC, "GHS" )
 
-        ReinvestCoinByClass(context, settings.NMC, "GHS" )
+    #    ReinvestCoinByClass(context, settings.NMC, "GHS" )
 
 
 ## Convert a unicode based float to a real float for us in calculations
@@ -396,13 +404,14 @@ def CancelOrder(context):
             log.Output ("Cancel order failed")
 
     ## NMC Order cancel
-    order = context.current_orders("GHS/NMC")
-    for item in order:
-        try:
-            context.cancel_order(item['id'])
-            log.Output ("GHS/NMC Order %s canceled" % item['id'])
-        except:
-            log.Output ("Cancel order failed")
+    #$ this market no longer seems to exsist
+    #order = context.current_orders("GHS/NMC")
+    #for item in order:
+    #    try:
+    #        context.cancel_order(item['id'])
+    #        log.Output ("GHS/NMC Order %s canceled" % item['id'])
+    #    except:
+    #        log.Output ("Cancel order failed")
 
     ## NMC Order cancel
     order = context.current_orders("NMC/BTC")
@@ -435,6 +444,9 @@ def GetBalance(Context, CoinName):
 
         Coin =  balance[CoinName]
         Saldo = ConvertUnicodeFloatToFloat(Coin["available"])
+        
+        if ( Coin["available"][0] == '-' ):
+            Saldo = Saldo * -1
 
     except:
         ## log.Output (balance)
@@ -541,7 +553,13 @@ def TradeCoin( Context, CoinName, TargetCoin, Amount ):
 
     log.Output ("----------------------------------------")
     log.Output ( CoinName + " for " + TargetCoin )
-
+    log.Output ( "Price               : %.8f" % Price )
+    
+    ## Adjust price, claim the 1 percent!
+    Price = Price * 0.999
+    Price = round(Price,8)
+    log.Output ( "Claim the 1 percent!: %.8f" % Price )
+    
     ## Get the balance of the coin
     TotalBalance = GetBalance(Context, CoinName)
 
@@ -549,8 +567,9 @@ def TradeCoin( Context, CoinName, TargetCoin, Amount ):
     Saldo = Amount
 
     ## The hack we are using right now is going to be to add 2 percent to the PRICE of the
-    ## targetcoin,
-    FeePrice = Price * 1.02
+    ## target coin,
+    FeePercent = 1.02
+    FeePrice = Price * FeePercent
 
     ## Caculate what to buy
     AmountToBuy = Saldo / FeePrice
@@ -558,7 +577,7 @@ def TradeCoin( Context, CoinName, TargetCoin, Amount ):
 
     ## Calculate the total amount
     Total = AmountToBuy * FeePrice
-
+    
     ## Adjusted to compensate for floating math conversion
     while ( Total > Saldo ):
         AmountToBuy = AmountToBuy - 0.0000005
