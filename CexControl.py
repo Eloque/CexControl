@@ -22,7 +22,7 @@ import sys
 ## just place till P3
 import urllib2
 
-version = "0.9.5"
+version = "0.9.6"
 
 ## Get Loggin obect
 from Log import Logger
