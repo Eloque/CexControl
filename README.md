@@ -14,7 +14,7 @@ The script will detect if there is a configuration file or not, and prompt for u
 
 To find out what version you are running, run the script on a commandline with the argument parameter, ie, "python ./CexControl.py version"
 
-#### To configre
+#### To configure
 To create a new configuration, start with "python ./CexControl.py newconfig", this will delete the existing configuration.
 To just change the thresholds, start with "python ./CexControl.py setthreshold", this will prompt for new thresholds. Please fill in decimals.
 
@@ -38,6 +38,9 @@ Vouchers via Cex.IO can of course also be used.
 I will accept and appreciate every and all donations.
 
 ### Version history
+
+#### Version 0.9.6
+- Removed the NMC/GHS market, no longer offered on Cex.IO
 
 #### Version 0.9.2
 - Added LTC Trading
